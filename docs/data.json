@@ -83,7 +83,7 @@
    "rung": 2,
    "recurring": true,
    "priority": 48363.0,
-   "example": "recalibrate wrist_flex: follower sits +11% of range from its leader in 2 rest periods"
+   "example": "follower wrist_flex sits 11% of range off its leader in 2 pauses; recalibrate it"
   },
   {
    "fingerprint": "actuation.not_following.wrist_roll",
@@ -93,7 +93,7 @@
    "rung": 2,
    "recurring": true,
    "priority": 29835.0,
-   "example": "joint wrist_roll: not following its command (stalled) for 8.4 s at 4.4 s, peak gap 34% of range"
+   "example": "wrist_roll stopped following its command (stalled) for 8.4 s at 4.4 s, up to 34% of range off; check that joint"
   },
   {
    "fingerprint": "actuation.not_tracking.wrist_roll",
@@ -103,7 +103,7 @@
    "rung": 2,
    "recurring": true,
    "priority": 24318.0,
-   "example": "joint wrist_roll: follower doesn't track its leader anywhere in this robot's data (correlation 0.90)"
+   "example": "follower wrist_roll doesn't track its leader anywhere in this arm's data (correlation 0.90); check that joint"
   },
   {
    "fingerprint": "actuation.gain_mismatch.wrist_flex",
@@ -113,7 +113,7 @@
    "rung": 2,
    "recurring": true,
    "priority": 23760.0,
-   "example": "recalibrate wrist_flex: follower moves 0.82 times as far as its leader across the range"
+   "example": "follower wrist_flex moves 0.82 times as far as its leader; recalibrate it"
   },
   {
    "fingerprint": "actuation.rest_offset.elbow_flex",
@@ -123,7 +123,7 @@
    "rung": 2,
    "recurring": true,
    "priority": 14520.0,
-   "example": "recalibrate elbow_flex: follower sits -20% of range from its leader in 5 rest periods"
+   "example": "follower elbow_flex sits 20% of range off its leader in 5 pauses; recalibrate it"
   },
   {
    "fingerprint": "sensing.stale_state.joint_stream",
@@ -143,7 +143,7 @@
    "rung": 2,
    "recurring": true,
    "priority": 8835.0,
-   "example": "joint wrist_flex: pinned at its max for 0.5 s at 11.0 s while commanded further; joint limit or calibration range"
+   "example": "wrist_flex sat at its max for 0.5 s at 11.0 s while told to go further; check its joint limit or calibration range"
   },
   {
    "fingerprint": "actuation.not_following.wrist_flex",
@@ -163,7 +163,7 @@
    "rung": 2,
    "recurring": true,
    "priority": 6510.0,
-   "example": "joint wrist_roll: pinned at its min for 1.5 s at 4.5 s while commanded further; joint limit or calibration range"
+   "example": "wrist_roll sat at its min for 1.5 s at 4.5 s while told to go further; check its joint limit or calibration range"
   },
   {
    "fingerprint": "actuation.gain_mismatch.elbow_flex",
@@ -173,7 +173,7 @@
    "rung": 2,
    "recurring": true,
    "priority": 6318.0,
-   "example": "recalibrate elbow_flex: follower moves 0.61 times as far as its leader across the range"
+   "example": "follower elbow_flex moves 0.61 times as far as its leader; recalibrate it"
   }
  ],
  "top_fingerprints_video": [
@@ -185,7 +185,7 @@
    "rung": 3,
    "recurring": true,
    "priority": 75012.0,
-   "example": "training: stall of 2.7 s from 17.5 to 20.2 s with healthy inputs and tracking"
+   "example": "stall of 2.7 s from 17.5 to 20.2 s, with fresh pictures and joints following their commands"
   },
   {
    "fingerprint": "task.missed_grasp.gripper",
@@ -205,7 +205,7 @@
    "rung": 3,
    "recurring": true,
    "priority": 1026.0,
-   "example": "training: 2 missed grasps in a row on gripper from 38.8 to 52.1 s with healthy inputs and tracking"
+   "example": "2 missed grasps in a row on gripper from 38.8 to 52.1 s, with fresh pictures and joints following their commands"
   },
   {
    "fingerprint": "sensing.stale_camera.fixed camera",
@@ -225,7 +225,7 @@
    "rung": 2,
    "recurring": true,
    "priority": 288.0,
-   "example": "recalibrate wrist_flex: follower sits +6% of range from its leader in 2 rest periods"
+   "example": "follower wrist_flex sits 6% of range off its leader in 2 pauses; recalibrate it"
   },
   {
    "fingerprint": "sensing.stale_camera.wrist camera",
@@ -245,7 +245,7 @@
    "rung": 2,
    "recurring": true,
    "priority": 132.0,
-   "example": "recalibrate wrist_flex: follower moves 0.85 times as far as its leader across the range"
+   "example": "follower wrist_flex moves 0.85 times as far as its leader; recalibrate it"
   },
   {
    "fingerprint": "actuation.not_following.wrist_roll",
@@ -255,7 +255,7 @@
    "rung": 2,
    "recurring": true,
    "priority": 108.0,
-   "example": "joint wrist_roll: not following its command (lagging) for 7.7 s at 7.1 s, peak gap 100% of range"
+   "example": "wrist_roll stopped following its command (lagging) for 7.7 s at 7.1 s, up to 100% of range off; check that joint"
   }
  ],
  "injection": {

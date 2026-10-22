@@ -24,6 +24,8 @@ p{margin:0 0 12px}
 .indep{font-size:13px;color:var(--muted);margin-bottom:22px}
 .finding{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--cause);padding:14px 16px;border-radius:6px;margin:18px 0}
 .finding p:last-child{margin:0}
+.finding .head{font-size:18px;font-weight:600;margin-bottom:12px}
+.finding ul{margin:0;padding-left:18px}.finding li{margin:8px 0}
 .num{font-variant-numeric:tabular-nums;font-weight:650}
 code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--card);border:1px solid var(--line);padding:1px 4px;border-radius:4px}
 a{color:var(--a)}
@@ -41,16 +43,25 @@ td.n{text-align:right}
 figure{margin:16px 0 26px}
 figcaption{font-size:14px;color:var(--muted);margin-top:6px}
 svg{width:100%;height:auto;display:block}
-.tl .ln{fill:none;stroke-width:1.4}.tl .ln.a{stroke:var(--a)}.tl .ln.b{stroke:var(--b);stroke-dasharray:4 3}
+.tl .ln{fill:none;stroke-width:2}.tl .ln.a{stroke:var(--a)}.tl .ln.b{stroke:var(--b);stroke-dasharray:4 3}
 .tl .ln.c{stroke:var(--c);stroke-width:5;opacity:.9}
-.tl .axis{stroke:var(--line)}.tl text{fill:var(--muted);font-size:11px}.tl .plabel{fill:var(--fg);font-size:12px}
+.tl .axis{stroke:var(--line)}.tl text{fill:var(--muted);font-size:17px}.tl .plabel{fill:var(--fg);font-size:19px}
 .tl .band.cause{fill:var(--cause);opacity:.22}.tl .band.anchor{fill:var(--anchor);opacity:.12}.tl .band.context{fill:var(--ctx);opacity:.18}
-.tl .bandlabel{font-size:11px;font-weight:650}.tl .bandlabel.cause{fill:var(--cause)}.tl .bandlabel.anchor{fill:var(--anchor)}
-.bars .bar{fill:var(--bar)}.bars .bar.hot{fill:var(--hot)}.bars text{fill:var(--fg);font-size:13px}.bars .bval{fill:var(--muted);font-size:12px}
+.tl .bandlabel{font-size:18px;font-weight:650}.tl .bandlabel.cause{fill:var(--cause)}.tl .bandlabel.anchor{fill:var(--anchor)}
+.bars .bar{fill:var(--bar)}.bars .bar.hot{fill:var(--hot)}.bars text{fill:var(--fg);font-size:21px}.bars .bval{fill:var(--muted);font-size:19px}
 .route{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:8px 0;white-space:pre-wrap}
 ul{padding-left:20px}li{margin:4px 0}
 footer{margin-top:48px;font-size:13px;color:var(--muted)}
 """
+
+
+def nice(route: str) -> str:
+    """Route text as a person reads it: joint names without underscores."""
+    return route.replace("follower.", "follower ").replace("leader.", "leader ").replace("_", " ")
+
+
+def ratio(whole: int, part: int) -> int:
+    return round(whole / part) if part else 0
 
 
 def _n(x) -> str:
@@ -81,122 +92,126 @@ def render(F, top, top_video, inj, bench, examples, lags, example_svg, plain, ru
 <meta name="description" content="Triage of {J['episodes']:,} robot episodes from {J['robots']:,} community arms: where progress stopped, which layer started it, and who should fix it.">
 <style>{CSS}</style></head><body><main>
 <h1>Episode triage</h1>
-<p class="lede">A tool that reads robot episode logs, finds where the robot stopped making progress
-or did something wrong, works out whether a camera, a joint, or the task started it, and puts
-each event on a ladder: clean, the robot can clear it itself, a ticket for a named part, send it
-to training, or a person has to look.</p>
+<p class="lede">A robot fleet produces more failures than a small team can look at. The costly mistake
+is retraining the policy on a failure that was really a frozen camera or a joint that didn't do what it
+was told. This tool reads the logs and checks those cheap layers first. A failure goes to training only
+when the cameras were fresh and the joints followed their commands.</p>
 <p class="indep">Independent project by Avi Desai. Not affiliated with Weave Robotics. Data: the
-LeRobot community dataset (Apache 2.0), {J['robots']:,} SO 100 and SO 101 arms built and
-calibrated by different people. Code and every number below: <a href="{repo}">{repo.replace('https://', '')}</a>.</p>
+LeRobot community dataset (Apache 2.0), {J['robots']:,} SO 100 and SO 101 arms built and calibrated by
+different people. Code and every number below: <a href="{repo}">{repo.replace('https://', '')}</a>.</p>
 """)
 
     h.append(f"""<div class="finding">
-<p>All {_n(J['timestamps_synthetic'])} of {_n(J['episodes'])} episodes have a perfectly regular
-timestamp column, because the recorder writes <code>frame_index / fps</code> instead of a measured
-time, so no timing check on the clock can find anything. Reading each camera's pictures against the
-joints that move it, {_n(V['episodes_stale_camera'])} of {_n(V['episodes_all_cameras'])} sampled
-episodes from {_n(V['robots_stale_camera'])} robots had a camera that stopped updating while the arm
-was moving.</p>
-<p>Before running it I predicted that at least a quarter of the stalls and missed grasp sequences
-would turn out to start with a sensing or actuation fault. It was {_n(began)} of {_n(n_anchor)}: in this
-teleoperated data nearly every stall is a person pausing, with fresh pictures and joints that track.
-What the cross check buys is that those {_n(training)} now go to training with the other layers checked
-rather than assumed. The faults it does find sit below the task: across all {_n(J['robots'])} robots,
-{_n(J['robots_any_actuation_ticket'])} carry a joint level fault worth a ticket, mostly calibration.</p>
+<p class="head">Across {_n(J['robots'])} arms, that check found joint or calibration faults on about
+1 in {ratio(J['robots'], J['robots_any_actuation_ticket'])} arms and frozen cameras in about 1 in
+{ratio(V['episodes_all_cameras'], V['episodes_stale_camera'])} recordings. It also proved my own
+prediction wrong: nearly every stall was really the operator pausing.</p>
+<ul>
+<li><b>Frozen cameras don't show up in the timestamps.</b> LeRobot writes each timestamp as frame number
+divided by frame rate, so all {_n(J['episodes'])} recordings have a perfect clock. Comparing each camera's
+picture with the arm's motion found {_n(V['episodes_stale_camera'])} of {_n(V['episodes_all_cameras'])}
+sampled recordings, on {_n(V['robots_stale_camera'])} arms, where a camera stopped updating while the arm
+moved.</li>
+<li><b>Joint faults are common, and mostly calibration.</b> {_n(J['robots_any_actuation_ticket'])} arms have
+at least one: the follower sits off its leader at rest ({J['robots_rest_offset']} arms), the two arms were
+calibrated over different ranges ({J['robots_gain_mismatch']}), bad motor readings ({J['robots_bus_glitch']}),
+or a reading that wraps from +180 to -180 degrees so the follower spins the long way round.</li>
+<li><b>My stall prediction was wrong.</b> I wrote down beforehand that at least a quarter of stalls would
+start with a camera or joint fault. It was {_n(began)} of {_n(n_anchor)}. In this data the check mostly
+confirms that a stall is a real task failure, and those {_n(training)} go to training with the evidence
+attached.</li>
+</ul>
 </div>
 """)
 
     # ladder
     h.append("<h2>The ladder</h2>")
-    h.append(f"""<p>Ordered rules, first match wins. Rule 0 runs first: if a layer wasn't checked or the
-data is broken, the event goes to a person with one line saying what's missing, and nothing is ever
-sent to training on a guess. Counts are incidents in the {_n(V['episodes_all_cameras'])} episodes where
-every camera and every joint was checked.</p><div class="ladder">""")
+    h.append(f"""<p>Every problem ends up on one of five rungs. The rules run in a fixed order and the first
+match wins. The first rule checks the data itself: if a camera wasn't checked or the data is broken, the
+problem goes to a person with a one line reason, so nothing reaches training on a guess. Counts are from the
+{_n(V['episodes_all_cameras'])} sampled recordings where every camera and joint was checked.</p><div class="ladder">""")
     blurbs = {0: "nothing fired", 1: "restart a stream, rehome a joint, retry a grasp",
               2: "camera or USB link, joint, bus or harness, calibration, recorder",
-              3: "a stall or missed grasps with fresh inputs and healthy tracking",
-              4: "data missing, causes too close to call, or contact versus a dead joint"}
+              3: "a stall or missed grasps with fresh pictures and joints that followed",
+              4: "data missing, two causes too close to call, or contact versus a dead joint"}
     clean_eps = int(V["episode_rungs"].get("0", V["episode_rungs"].get(0, 0)))
     for k in range(5):
         cnt = clean_eps if k == 0 else inc_rungs.get(k, 0)
-        unit = "episodes" if k == 0 else "incidents"
+        unit = "recordings" if k == 0 else "problems"
         ex = ex_route.get(k)
-        exh = f'<div class="ex">e.g. {escape(ex)}</div>' if ex and k else ""
+        exh = f'<div class="ex">Example: {escape(nice(ex))}</div>' if ex and k else ""
         h.append(f'<div class="rung r{k}"><div class="k">{k}</div><div><div class="t">{escape(rung_names[k])}'
                  f' <span class="muted">{cnt:,} {unit}</span></div><div class="ex">{escape(blurbs[k])}</div>{exh}</div></div>')
     h.append("</div>")
 
     # worked episodes
     if examples:
-        h.append("<h2>Three episodes, one clock</h2>")
-        h.append("""<p>Each panel shares one time axis. The red band is what started it, the blue band
-is what a person would have been called for. Each plot is zoomed to the incident. Cause is the earliest
-sensing or actuation event that began before the failure; anything that started after is context, never
-the cause.</p>""")
-        for n_ex, ex in enumerate(examples, 1):
+        h.append("<h2>Three examples, one clock</h2>")
+        h.append("""<p>Each example stacks the arm, the cameras, and the gripper on one time axis, zoomed to the
+problem. Red marks what started it; blue marks what a person would have been called for. The cause is
+always the earliest camera or joint problem that began before the failure, because anything that began
+afterwards can't have caused it. Dataset ids for these examples are in
+<code>results/examples.json</code>.</p>""")
+        for ex in examples:
             top_i = ex["incidents"][ex["focus"]] if ex["incidents"] else None
-            route = top_i["route"] if top_i else "clean"
+            rung = top_i["rung"] if top_i else 0
+            route = nice(top_i["route"]) if top_i else "clean"
             h.append(f"<figure>{example_svg(ex)}<figcaption><b>{escape(ex['why'])}.</b>"
-                     f'<div class="route">rung {top_i["rung"] if top_i else 0} ({top_i["rule"] if top_i else "R7"}): '
-                     f"{escape(route)}</div>"
-                     f"Community example {n_ex}; dataset ids are in <code>results/examples.json</code>, "
-                     f"not on this page.</figcaption></figure>")
+                     f'<div class="route">Rung {rung}, {escape(rung_names[rung])}: {escape(route)}</div>'
+                     f"</figcaption></figure>")
 
     # fleet pareto
-    h.append("<h2>What to fix first, across the fleet</h2>")
-    h.append(f"""<p>Every incident becomes a ledger row with a fingerprint (check plus the part it names).
-Fingerprints are ranked by robots affected times episodes affected times rung weight, so a fault on many
-arms outranks one repeated on a single arm. Red bars cross the recurring bar: 2 or more robots, or 3 or
-more times on one. Joint and task checks on all {_n(J['episodes'])} episodes
-({J['hours']} hours).</p>""")
+    h.append(f"<h2>What to fix first, across all {J['robots']:,} arms</h2>")
+    h.append(f"""<p>Each type of problem is ranked by how many arms it hits times how many recordings,
+weighted by rung, so a fault on many arms outranks one repeated on a single arm. Red bars recur: on 2 or
+more arms, or 3 or more times on one. This pass covers joint and data problems on all
+{_n(J['episodes'])} recordings ({J['hours']} hours). Task problems like stalls need the video checked, so
+they're counted in the sample above.</p>""")
     rows = [{"label": plain(t["fingerprint"]), "robots": t["robots"], "recurring": t["recurring"]} for t in top]
     h.append(f'<figure>{svg.bars(rows, "robots", "label", mark="recurring", note="robots affected")}'
-             f'<figcaption>Robots affected, top {len(rows)} fingerprints by priority.</figcaption></figure>')
-    h.append('<div class="scroll"><table><tr><th>what</th><th>rung</th><th class="n">robots</th>'
-             '<th class="n">episodes</th></tr>')
+             f'<figcaption>Arms affected, top {len(rows)} problem types by priority.</figcaption></figure>')
+    h.append('<div class="scroll"><table><tr><th>problem</th><th>rung</th><th class="n">arms</th>'
+             '<th class="n">recordings</th></tr>')
     for t in top:
-        h.append(f'<tr><td>{escape(plain(t["fingerprint"]))}<br><span class="muted">{escape(t["example"])}</span></td>'
+        h.append(f'<tr><td>{escape(plain(t["fingerprint"]))}<br><span class="muted">Example: {escape(nice(t["example"]))}</span></td>'
                  f'<td>{t["rung"]}</td><td class="n">{t["robots"]:,}</td><td class="n">{t["episodes"]:,}</td></tr>')
     h.append("</table></div>")
-    h.append("""<p class="note">The joint pass has no video, so task fingerprints (stalls, missed grasps) aren't
-ranked here: without the cameras checked they all go to rule 0. They're ranked on the video sample above.
-A rest offset can also be a weak servo sagging under load; load data would separate the two.</p>""")
+    h.append("""<p class="note">A follower offset at rest can also be a weak servo sagging under load.
+Recording motor load would separate the two.</p>""")
 
     # camera lag
     lb = {int(k): v for k, v in V.get("lag_by_frame", {}).items()}
     if lb:
         lag_rows = [{"label": (f"{k} frame{'' if k == 1 else 's'} ({round(k * 1000 / 30)} ms at 30 fps)" if k >= 0
-                               else f"{k} frames (camera ahead: estimate suspect)"),
+                               else f"{k} frames (ahead: estimate suspect)"),
                      "count": v, "hot": k >= 3} for k, v in sorted(lb.items())]
-        h.append("<h2>Camera to joint lag</h2>")
-        h.append(f"""<p>The delay at which a camera's image change best lines up with the motion of the
-joints it sees, as a median over each robot's sampled episodes (one episode's estimate moves by a frame,
-so this is judged per robot). Most of the {_n(V['lag_streams'])} camera streams sit at 0 to 2 frames.
-{_n(V['camera_streams_lag_ge_3'])} streams on {_n(V['robots_lag_ge_3'])} robots trail their joints by
-3 frames (100 ms) or more, up to {V['lag_max_frames']:g}. Merged for training, those datasets disagree
-about when the gripper saw the object. {_n(V['camera_streams_lag_negative'])} streams estimate the camera
-ahead of the joints, which shouldn't happen and most likely means the estimate is wrong for them.</p>""")
+        h.append("<h2>How late each camera runs</h2>")
+        h.append(f"""<p>For each arm, the delay at which a camera's picture changes line up best with the
+arm's motion. Most of the {_n(V['lag_streams'])} cameras run 0 to 2 frames behind the joints, which is
+normal for a USB camera. {_n(V['camera_streams_lag_ge_3'])} cameras on {_n(V['robots_lag_ge_3'])} arms
+run 3 frames (100 ms) or more behind, up to {V['lag_max_frames']:g}. Data merged from those arms disagrees
+about when the gripper saw the object. {_n(V['camera_streams_lag_negative'])} cameras appear to run ahead
+of the joints, which can't happen, so the estimate is probably wrong for them.</p>""")
         h.append(f'<figure>{svg.bars(lag_rows, "count", "label", mark="hot", note="camera streams by median lag")}'
-                 f"<figcaption>Camera streams by median lag, rounded to the nearest frame (robots with 2 or more "
-                 f"estimated episodes).</figcaption></figure>")
+                 f"<figcaption>Cameras by typical delay, rounded to the nearest frame (arms with 2 or more "
+                 f"recordings where it could be measured).</figcaption></figure>")
 
     # validation
-    h.append("<h2>Does it find what it says it finds?</h2>")
+    h.append("<h2>Does it catch what it claims to?</h2>")
     if inj:
         cal, S = inj["calibration"], inj["summary"]
-        h.append(f"""<p>Faults were injected into real community episodes with a known answer. Video faults
-were reencoded with LeRobot's own defaults (AV1, crf 30, GOP 2), so a frozen frame reaches the
-detector through the same compression a real one would. One threshold was tuned on data: the image
-change level for a frozen frame, set to {cal['stale_tau_e']} gray levels on {len(cal['robots'])}
-calibration robots. Everything was then frozen and scored on different robots. Raw counts, misses
-included.</p>""")
+        h.append(f"""<p>I injected known faults into real recordings and checked whether the tool caught
+them. Video faults were compressed again with LeRobot's own settings, so a frozen picture reaches the tool
+the same way a real one would. One threshold was tuned on data (how little a picture can change and
+still count as frozen), set on {len(cal['robots'])} arms. It was then frozen and tested on 40 different
+arms. These are raw counts, misses included.</p>""")
         names = {"freeze_3": "camera frozen 3 frames", "freeze_6": "camera frozen 6 frames",
                  "freeze_10": "camera frozen 10 frames", "freeze_20": "camera frozen 20 frames",
                  "stall": "joint stalls for 1.5 s", "offset": "joint offset 8% of range",
                  "glitch": "3 bad reads on one motor", "stale_state": "joint stream repeats 6 frames"}
-        h.append('<div class="scroll"><table><tr><th>injected fault</th><th class="n">n</th><th class="n">caught</th>'
-                 '<th class="n">low conf.</th><th class="n">missed</th><th class="n">abstained</th>'
-                 '<th class="n">right rung</th><th class="n">other new events</th></tr>')
+        h.append('<div class="scroll"><table><tr><th>fault injected</th><th class="n">tries</th><th class="n">caught</th>'
+                 '<th class="n">caught, low confidence</th><th class="n">missed</th><th class="n">skipped</th>'
+                 '<th class="n">right rung</th><th class="n">false extras</th></tr>')
         for k, v in S["faults"].items():
             h.append(f'<tr><td>{names.get(k, k)}</td><td class="n">{v["n"]}</td><td class="n">{v["caught"]}</td>'
                      f'<td class="n">{v["caught_low_confidence"]}</td><td class="n">{v["missed"]}</td>'
@@ -204,15 +219,13 @@ included.</p>""")
                      f'<td class="n">{v["new_other_events"]}</td></tr>')
         L = S["lag"]
         h.append("</table></div>")
-        h.append(f"""<p class="note">"Low conf." means the detector found the frozen run but the camera barely shows
-the arm moving, so the run is logged and the ladder doesn't act on it; that guard is what keeps a camera
-pointed away from the arm from being blamed for a stall, and it costs recall on more than half these
-episodes. "Abstained" means the episode had fewer than two rest periods, so a resting offset couldn't be
-measured. A freeze scored at rung 3 started after a stall, so it was correctly context. Camera delayed by
-3 frames: the lag estimate moved by 3 plus or minus 1 on
-{L['within_1_of_3']} of {L['estimated']} episodes where both estimates existed ({L['n']} tried). "Other new
-events" counts anything else the injection made fire. Injected faults test the detectors and the ladder;
-they don't test whether natural faults look the same.</p>""")
+        h.append(f"""<p class="note"><b>Caught, low confidence:</b> the tool found the frozen picture, but
+that camera barely shows the arm moving, so it logs the finding and doesn't act on it. This guard stops a
+camera that can't see the arm from being blamed for a stall, and here it costs more than half the catches.
+<b>Skipped:</b> the recording had fewer than two pauses, so a resting offset couldn't be measured.
+<b>False extras:</b> anything else the injected fault set off. A camera delayed by 3 frames was measured
+within 1 frame of that on {L['within_1_of_3']} of {L['estimated']} recordings. Injected faults test the
+rules against a known answer; they don't show that natural faults look the same.</p>""")
     if bench:
         sf = bench["stale_frames"]
         h.append("<h3>Physical faults on an SO 101</h3>")
@@ -237,7 +250,7 @@ four over the same bus and none is recorded by default. They would turn "not fol
 on overload" or "brownout".</li>
 <li><b>The goal actually sent</b> after any clipping, beside the leader or policy command.</li>
 <li><b>Every takeover</b> with the progress score and subsystem health at that moment. Each one is a
-labeled anchor.</li>
+failure someone has already labeled.</li>
 </ul>
 <p>The flight recorder in <code>recorder/</code> is written to log the first four on an SO 101 as a
 sidecar to a normal LeRobot dataset, with a scheduled fault injector and a run sheet. It hasn't been run on
@@ -246,16 +259,16 @@ hardware yet; recording that bench set is the next step, and the report adds its
     # what's wrong
     h.append("<h2>What's wrong with it</h2>")
     h.append(f"""<ul>
-<li>Stale camera and lag are inferred from picture content against joint motion, because the data has
-no real clock. A camera pointed at a blank surface while moving can look frozen; those runs get low
-confidence and stay off the counts.</li>
-<li>"Policy" in teleop data means the operator. Rung 3 here is task level stalls and misses, not a learned
-policy failing.</li>
-<li>Proprioception alone can't always tell a thin cloth grasp from an empty close.</li>
-<li>Each dataset counts as one robot. Some people recorded several datasets on one arm, so robot counts
+<li>Frozen cameras and camera delay are inferred by comparing pictures with joint motion, because the data
+has no real clock. A camera moving over a blank surface can look frozen; those cases get low confidence
+and stay out of the counts.</li>
+<li>Almost all of this data is people teleoperating, so "send to training" here means a task level stall
+or miss by the operator, not a learned policy failing.</li>
+<li>Joint positions alone can't always tell a grasp on thin cloth from closing on nothing.</li>
+<li>Each dataset counts as one arm. Some people recorded several datasets on the same arm, so arm counts
 are an upper bound.</li>
-<li>The video checks ran on a seeded sample ({V['robots']:,} robots, up to 3 episodes each), not every
-episode.</li>
+<li>The video checks ran on a random sample ({V['robots']:,} arms, up to 3 recordings each), not every
+recording.</li>
 <li>Every validation number on this page comes from faults injected in software. None comes from
 a physical fault on a real arm yet, and injected faults are cleaner than natural ones.</li>
 </ul>
@@ -284,41 +297,45 @@ def readme_finding(F, top) -> str:
     began = A.get("began with sensing or actuation", 0)
     training = A.get("training, inputs healthy", 0)
     lines = [
-        f"Pointed at the LeRobot community dataset: {J['robots']:,} SO 100 and SO 101 arms, "
-        f"{J['episodes']:,} episodes, {J['hours']} hours.",
+        f"Run on the LeRobot community dataset: {J['robots']:,} SO 100 and SO 101 arms built by different "
+        f"people, {J['episodes']:,} recordings, {J['hours']} hours. Across those arms the check found joint or "
+        f"calibration faults on about 1 in {ratio(J['robots'], J['robots_any_actuation_ticket'])} arms and "
+        f"frozen cameras in about 1 in {ratio(V['episodes_all_cameras'], V['episodes_stale_camera'])} recordings. "
+        f"It also proved my own prediction wrong: nearly every stall was really the operator pausing.",
         "",
-        f"- **The clock says nothing.** All {J['timestamps_synthetic']:,} of {J['episodes']:,} episodes have "
-        f"timestamps exactly equal to `frame_index / fps`, so any check on the timestamp column passes by "
-        f"construction.",
-        f"- **Cameras freeze while the arm moves.** In a seeded sample of {V['episodes_all_cameras']:,} episodes "
-        f"from {V['robots']:,} robots with every camera checked, {V['episodes_stale_camera']:,} episodes on "
-        f"{V['robots_stale_camera']:,} robots had at least one camera stop updating for 3 frames or more while "
-        f"the joints it sees were moving ({V['stale_runs']:,} runs, {V['stale_frames']:,} frames, median run "
-        f"{V['stale_run_frames_median']:g} frames). Every one of those episodes has a perfect timestamp column. "
-        f"I predicted at least 1 in 10 beforehand; it was 1 in {V['episodes_all_cameras'] / max(V['episodes_stale_camera'], 1):.0f}.",
-        f"- **My prediction about stalls was wrong.** I wrote down beforehand that at least a quarter of stalls "
-        f"and missed grasp sequences would start with a sensing or actuation fault. It was {began:,} of "
-        f"{n_anchor:,}. In teleoperated data nearly every stall is a person pausing with fresh pictures and "
-        f"joints that track; {training:,} went to training with every layer checked, and the rest went to a "
-        f"person because a standing fault or a near tie made the call unsafe.",
-        f"- **Joint level faults across the fleet.** {J['robots_any_actuation_ticket']:,} of {J['robots']:,} "
-        f"robots carry at least one actuation ticket: {J['robots_gain_mismatch']:,} with leader and follower "
-        f"calibrated over different spans, {J['robots_not_tracking']:,} with a joint whose follower doesn't track "
-        f"its leader, {J['robots_rest_offset']:,} with a follower offset at rest, and {J['robots_bus_glitch']:,} "
-        f"with impossible one frame jumps (bad bus reads).",
-        f"- **Camera lag differs by robot.** Most of {V['lag_streams']:,} camera streams trail their joints by 0 "
-        f"to 2 frames; {V['camera_streams_lag_ge_3']:,} streams on {V['robots_lag_ge_3']:,} robots trail by 3 "
-        f"frames (100 ms) or more, up to {V['lag_max_frames']:g}. {V['camera_streams_lag_negative']} streams "
-        f"estimate the camera ahead of the joints, which most likely means the estimate is wrong there.",
+        f"- **Frozen cameras don't show up in the timestamps.** LeRobot writes each timestamp as "
+        f"`frame_index / fps`, so all {J['episodes']:,} recordings have a perfect clock. Comparing each "
+        f"camera's picture with the arm's motion, in a random sample of {V['episodes_all_cameras']:,} "
+        f"recordings from {V['robots']:,} arms, found {V['episodes_stale_camera']:,} recordings on "
+        f"{V['robots_stale_camera']:,} arms where a camera stopped updating for 3 frames or more while the arm "
+        f"moved ({V['stale_runs']:,} freezes, median {V['stale_run_frames_median']:g} frames). I predicted at "
+        f"least 1 in 10 beforehand.",
+        f"- **Joint faults are common, and mostly calibration.** {J['robots_any_actuation_ticket']:,} of "
+        f"{J['robots']:,} arms have at least one: the follower sits off its leader at rest "
+        f"({J['robots_rest_offset']:,} arms), the two arms were calibrated over different ranges "
+        f"({J['robots_gain_mismatch']:,}), a follower joint doesn't track its leader at all "
+        f"({J['robots_not_tracking']:,}), bad motor readings ({J['robots_bus_glitch']:,}), or a reading that "
+        f"wraps from +180 to -180 degrees so the follower spins the long way round.",
+        f"- **My stall prediction was wrong.** I wrote down beforehand that at least a quarter of stalls and "
+        f"missed grasp sequences would start with a camera or joint fault. It was {began:,} of {n_anchor:,}. "
+        f"In this teleoperated data nearly every stall is a person pausing, so the check mostly confirms that a "
+        f"stall is a real task failure: {training:,} went to training with every layer checked, and the rest "
+        f"went to a person because another fault on the same recording made the call unsafe.",
+        f"- **Cameras run late by different amounts.** Most of {V['lag_streams']:,} cameras run 0 to 2 frames "
+        f"behind the joints; {V['camera_streams_lag_ge_3']:,} cameras on {V['robots_lag_ge_3']:,} arms run 3 "
+        f"frames (100 ms) or more behind, up to {V['lag_max_frames']:g}. {V['camera_streams_lag_negative']} "
+        f"appear to run ahead, which can't happen, so the estimate is probably wrong for them.",
         "",
-        "Top sensing and actuation fingerprints by priority across all robots (task fingerprints need the "
-        "cameras checked, so they're ranked on the video sample in the report):",
+        "What to fix first across all arms (joint and data problems; stalls need the video checked, so they're "
+        "ranked on the video sample in the report):",
         "",
-        "| fingerprint | rung | robots | episodes |",
-        "|---|---|---|---|",
+        "| problem | code name | rung | arms | recordings |",
+        "|---|---|---|---|---|",
     ]
+    from .report import plain
     for t in top[:8]:
-        lines.append(f"| `{t['fingerprint']}` | {t['rung']} | {t['robots']:,} | {t['episodes']:,} |")
+        lines.append(f"| {plain(t['fingerprint'])} | `{t['fingerprint']}` | {t['rung']} | {t['robots']:,} | "
+                     f"{t['episodes']:,} |")
     lines += ["", "Every number here is computed by `episode_triage/ledger.py` from `results/`, and the same "
                   "numbers are in `docs/data.json`."]
     return "\n".join(lines)
@@ -339,19 +356,19 @@ def readme_validation(inj, bench) -> str:
         f"include natural freezes, so that second number is an upper bound). Then every threshold was frozen and "
         f"the faults below were scored on different robots.",
         "",
-        "| injected fault | n | caught | low confidence | missed | abstained | right rung | other new events |",
+        "| fault injected | tries | caught | caught, low confidence | missed | skipped | right rung | false extras |",
         "|---|---|---|---|---|---|---|---|",
     ]
     for k, v in S["faults"].items():
         lines.append(f"| {FAULT_NAMES.get(k, k)} | {v['n']} | {v['caught']} | {v['caught_low_confidence']} | "
                      f"{v['missed']} | {v['abstained']} | {v['right_rung']} | {v['new_other_events']} |")
-    lines += ["", "**Low confidence** means the detector found the frozen run, but that camera barely shows the arm "
-                  "moving, so the run is logged and the ladder doesn't act on it. That guard is what stopped "
+    lines += ["", "**Caught, low confidence** means the tool found the frozen picture, but that camera barely shows "
+                  "the arm moving, so the finding is logged and the ladder doesn't act on it. That guard is what stopped "
                   "cameras that can't see the arm from being blamed for stalls in the fleet run, and on these "
                   "episodes it costs more than half the recall. It is defined as 3 times the stale threshold, so "
                   "freezing that threshold at 0.51 made the guard stricter too; I didn't retune it on the test "
-                  "robots. **Abstained** means the episode had fewer than two rest periods, so a resting offset "
-                  "can't be measured in it."]
+                  "robots. **Skipped** means the recording had fewer than two pauses, so a resting offset can't be "
+                  "measured in it. **False extras** counts anything else the injected fault set off."]
     L = S["lag"]
     lines += ["", f"Camera delayed by 3 frames: the lag estimate moved by 3 plus or minus 1 on {L['within_1_of_3']} "
                   f"of {L['estimated']} episodes where both estimates existed ({L['n']} tried). Shifts seen: "
