@@ -131,7 +131,7 @@ every camera and every joint was checked.</p><div class="ladder">""")
 is what a person would have been called for. Cause is the earliest sensing or actuation event that
 began before the failure; anything that started after is context, never the cause.</p>""")
         for ex in examples:
-            top_i = max(ex["incidents"], key=lambda i: i["rung"]) if ex["incidents"] else None
+            top_i = ex["incidents"][ex["focus"]] if ex["incidents"] else None
             route = top_i["route"] if top_i else "clean"
             h.append(f"<figure>{example_svg(ex)}<figcaption><b>{escape(ex['why'])}</b><br>"
                      f'<span class="route">rung {top_i["rung"] if top_i else 0}, {top_i["rule"] if top_i else "R7"}: '

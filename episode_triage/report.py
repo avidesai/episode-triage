@@ -52,14 +52,14 @@ def plain(fp: str) -> str:
 
 # ---------------------------------------------------------------- examples
 
-def make_examples(results: Path, picks: list[tuple[str, int, str]]) -> None:
+def make_examples(results: Path, picks: list[tuple[str, int, str, str]]) -> None:
     """Re-run chosen episodes with traces and save the series the page plots."""
     from .fleet import load_video_frames
     from .pipeline import profile_for, triage_episode
     from .readers import open_robot
 
     out = []
-    for rid, ep_i, why in picks:
+    for rid, ep_i, why, focus_check in picks:
         d = Path(".cache/community_v3") / rid
         robot = open_robot(d, robot_id=rid, remote=COMMUNITY)
         prof = profile_for(robot)
@@ -67,8 +67,10 @@ def make_examples(results: Path, picks: list[tuple[str, int, str]]) -> None:
         ok = {k: v for k, v in frames.items() if isinstance(v, np.ndarray)}
         r = triage_episode(robot.episode(ep_i), prof, frames_override=ok, keep_traces=True)
         sig = r.traces.pop("_signals")
-        inc = max(r.incidents, key=lambda i: i.rung) if r.incidents else None
-        focus = (inc.cause or inc.anchor) if inc else None
+        hits = [k for k, i in enumerate(r.incidents) if (i.cause or i.anchor).check == focus_check]
+        focus_i = hits[0] if hits else max(range(len(r.incidents)), key=lambda k: r.incidents[k].rung)
+        inc = r.incidents[focus_i]
+        focus = inc.anchor if inc.anchor is not None and inc.anchor.layer == "actuation" else (inc.cause or inc.anchor)
         j = sig.names.index(focus.component) if focus and focus.component in sig.names else sig.arm_idx[1]
         g = sig.gripper_idx[0] if sig.gripper_idx else None
         series = {
@@ -81,7 +83,7 @@ def make_examples(results: Path, picks: list[tuple[str, int, str]]) -> None:
             "cams": {k: {"change": np.nan_to_num(v["change"]).round(3).tolist(),
                          "motion": (100 * v["motion"]).round(3).tolist()} for k, v in r.traces.items()},
         }
-        out.append({"robot_id": rid, "episode": ep_i, "why": why, "rung": r.rung,
+        out.append({"robot_id": rid, "episode": ep_i, "why": why, "rung": r.rung, "focus": focus_i,
                     "incidents": [i.to_dict() for i in r.incidents],
                     "events": [e.to_dict() for e in r.events], "series": series})
     (results / "examples.json").write_text(json.dumps(out, default=_json))
@@ -103,7 +105,7 @@ def _example_svg(ex: dict) -> str:
                        "series": [{"y": np.array(s["gripper_cmd"]), "cls": "b", "name": "command"},
                                   {"y": np.array(s["gripper_pos"]), "cls": "a", "name": "position"}]})
     bands = []
-    top = max(ex["incidents"], key=lambda i: i["rung"]) if ex["incidents"] else None
+    top = ex["incidents"][ex["focus"]] if ex["incidents"] else None
     if top:
         if top.get("anchor"):
             a = top["anchor"]
