@@ -29,6 +29,7 @@ PLAIN = {
     "actuation.not_tracking": "follower doesn't track its leader on a joint",
     "actuation.bus_glitch": "impossible one frame jumps on a motor",
     "actuation.pinned": "joint pinned at its limit while pushed further",
+    "actuation.command_wrap": "leader reading wrapped past its end",
     "task.stall": "stopped making progress for 2 s or more",
     "task.missed_grasp_sequence": "2 or more missed grasps in a row",
     "task.missed_grasp": "single missed grasp",
@@ -129,7 +130,9 @@ def build(results: Path, out: Path) -> None:
 
     F = findings(joints, video)
     rows = ledger_rows(video, "video") + ledger_rows(joints, "joints")
-    top = rank_fingerprints(ledger_rows(joints, "joints"), top=10)
+    # Across the whole fleet only joint level layers were checked (no video), so the ranking
+    # there is sensing and actuation fingerprints; task fingerprints come from the video sample.
+    top = rank_fingerprints(ledger_rows(joints, "joints"), top=10, layers=("sensing", "actuation"))
     top_video = rank_fingerprints(ledger_rows(video, "video"), top=8)
     lags = robot_lags(video)
     data = {"findings": F, "top_fingerprints_fleet": top, "top_fingerprints_video": top_video,

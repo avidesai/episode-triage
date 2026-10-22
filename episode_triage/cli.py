@@ -87,7 +87,10 @@ def cmd_rescore(a):
             if not fz.exists():
                 f.write(json.dumps({"robot_id": rid, "error": "no cached video for this robot"}) + "\n")
                 continue
-            res = score_video_sample(root / rid, eps, _read_energies(fz))
+            try:
+                res = score_video_sample(root / rid, eps, _read_energies(fz))
+            except Exception as e:     # same rule as the fleet run: one bad dataset is a row, not a crash
+                res = {"robot_id": rid, "error": f"{type(e).__name__}: {e}"}
             f.write(json.dumps(res, default=_json) + "\n")
     print(f"rescored {len(sample['picks'])} robots into {out}")
 
