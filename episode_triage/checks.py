@@ -23,7 +23,7 @@ from .signals import (follow_lag, image_energy, joint_ranges, rolling_max, runs,
 THRESHOLDS = {
     # S1 stale camera. A frame is stale when the picture didn't change although the
     # joints that move (or are seen by) that camera did.
-    "stale_tau_e": 0.35,          # gray levels at 80x60; set from the fleet's E histogram valley
+    "stale_tau_e": 0.51,          # gray levels at 80x60; calibrated on injected freezes, results/inject_eval.json
     "stale_tau_m": 0.02,          # summed state speed over the chain, fraction of range per frame
     "stale_min_frames": 3,        # 100 ms at 30 fps
     # S3 camera to joint lag
@@ -250,20 +250,17 @@ def chain_motion(sig: EpisodeSignals, chain: list[int]) -> np.ndarray:
 
 
 def check_camera_lag(cam: str, e: np.ndarray, m: np.ndarray, fps: float):
-    """S3. Returns (lag or None, evidence dict, events)."""
+    """S3. Camera latency relative to the joint stream, in frames.
+
+    One episode's estimate moves by a frame either way, so it's kept as a measurement
+    here and judged per robot (the median over its episodes) in the fleet view, never
+    used to flag a single episode. Returns (lag or None, evidence).
+    """
     T = THRESHOLDS
     valid = rolling_max(m, 15) > T["stale_tau_m"]
     lag, corr, sharp = xcorr_lag(e, m, valid)
-    ev = {"lag_frames": lag, "peak_corr": corr, "sharpness": sharp}
-    if lag is None or corr < T["lag_min_corr"] or sharp < T["lag_min_sharpness"]:
-        return None, ev, []
-    out = []
-    if abs(lag) >= T["lag_flag_frames"]:
-        conf = "high" if sharp >= 0.2 else "medium"
-        out.append(Event("sensing.camera_lag", "sensing", cam, 0, len(e), fps, conf,
-                         {"lag_frames": int(lag), "lag_ms": round(1000 * lag / fps, 1),
-                          "peak_corr": corr, "sharpness": sharp}))
-    return lag, ev, out
+    ok = lag is not None and corr >= T["lag_min_corr"] and sharp >= T["lag_min_sharpness"]
+    return (lag if ok else None), {"lag_frames": lag if ok else None, "peak_corr": corr, "sharpness": sharp}
 
 
 def check_stale_camera(cam: str, e: np.ndarray, m: np.ndarray, fps: float,
