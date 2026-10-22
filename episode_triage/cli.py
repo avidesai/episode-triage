@@ -46,7 +46,11 @@ def cmd_run(a):
 
 def cmd_fleet_joints(a):
     from .fleet import fleet_joint_run
-    res = fleet_joint_run(a.root, Path(a.out), workers=a.workers)
+    out = Path(a.out)
+    res = fleet_joint_run(a.root, out, workers=a.workers)
+    import gzip
+    out.with_name(out.name + ".gz").write_bytes(gzip.compress(out.read_bytes()))
+    out.unlink()
     n_err = sum("error" in r for r in res)
     n_ep = sum(len(r.get("episodes", [])) for r in res)
     print(f"{len(res)} robots, {n_ep} episodes, {n_err} robots failed to load")
@@ -90,7 +94,8 @@ def cmd_rescore(a):
 
 def cmd_inject_eval(a):
     from .validate import inject_eval
-    inject_eval(Path(a.sample), Path(a.root), Path(a.out), seed=a.seed, n_calib=a.calib, n_test=a.test)
+    inject_eval(Path(a.sample), Path(a.root), Path(a.out), seed=a.seed, n_calib=a.calib, n_test=a.test,
+                reuse_calibration=Path(a.reuse_calibration) if a.reuse_calibration else None)
 
 
 def cmd_bench_eval(a):
@@ -145,6 +150,7 @@ def main(argv=None):
     s.add_argument("--calib", type=int, default=20)
     s.add_argument("--test", type=int, default=40)
     s.add_argument("--seed", type=int, default=11)
+    s.add_argument("--reuse-calibration", help="score held out robots only, with the frozen threshold")
     s.add_argument("--out", default="results/inject_eval.json")
     s.set_defaults(fn=cmd_inject_eval)
 

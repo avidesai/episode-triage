@@ -39,6 +39,10 @@ class Incident:
     anchor: Event | None = None
     context: list[Event] = field(default_factory=list)
     self_recovery: str | None = None
+    related: list[Event] = field(default_factory=list)   # other candidates and repeats folded in
+
+    def involves(self, e: Event) -> bool:
+        return e is self.cause or e is self.anchor or any(e is x for x in self.context + self.related)
 
     @property
     def fingerprint(self) -> str:
@@ -146,15 +150,18 @@ def triage(events: list[Event], cov: Coverage) -> list[Incident]:
                     continue
                 stale_done.add(key)
             rule, rung, route, fix = _cause_rule(e, events)
-            incidents.append(Incident(rule, rung, route, e, self_recovery=fix))
+            incidents.append(Incident(rule, rung, route, e, self_recovery=fix,
+                                      related=[x for x in same if x is not e] if len(same) >= STALE_RECUR else []))
         elif e.check == "actuation.bus_glitch":
             if e.component in glitch_done:
                 continue
             n = sum(1 for x in rest if x.check == e.check and x.component == e.component)
+            same = [x for x in rest if x.check == e.check and x.component == e.component]
             if n >= THRESHOLDS["glitch_ticket_count"]:
                 glitch_done.add(e.component)
             rule, rung, route, fix = _cause_rule(e, events)
-            incidents.append(Incident(rule, rung, route, e, self_recovery=fix))
+            incidents.append(Incident(rule, rung, route, e, self_recovery=fix,
+                                      related=[x for x in same if x is not e] if n >= THRESHOLDS["glitch_ticket_count"] else []))
         elif e.check == "actuation.pinned":
             rule, rung, route, fix = _cause_rule(e, events)
             incidents.append(Incident(rule, rung, route, e))
@@ -185,6 +192,12 @@ def triage(events: list[Event], cov: Coverage) -> list[Incident]:
 
 
 def _anchor_incident(x: Explained, events: list[Event], cov: Coverage) -> Incident:
+    inc = _anchor_rule(x, events, cov)
+    inc.related = [c for c in x.candidates if c is not inc.cause]
+    return inc
+
+
+def _anchor_rule(x: Explained, events: list[Event], cov: Coverage) -> Incident:
     a = x.anchor
     if x.tie:
         names = " and ".join(sorted({c.fingerprint for c in x.candidates[:2]}))
