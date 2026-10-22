@@ -17,7 +17,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 
 from .checks import THRESHOLDS, Event
-from .timeline import INTEGRITY_PREFIX, Explained, explain
+from .timeline import INTEGRITY_PREFIX, STANDING, Explained, explain
 
 RUNG_NAMES = {
     0: "clean",
@@ -162,6 +162,14 @@ def triage(events: list[Event], cov: Coverage) -> list[Incident]:
             incidents.append(Incident("R2", 2, f"recalibrate {e.component}: follower sits "
                                                f"{e.evidence['offset'] * 100:+.0f}% of range from its leader in "
                                                f"{e.evidence['rest_segments']} rest periods", e))
+        elif e.check == "actuation.gain_mismatch":
+            incidents.append(Incident("R2", 2, f"recalibrate {e.component}: follower moves "
+                                               f"{e.evidence['gain']:.2f} times as far as its leader across "
+                                               f"the range", e))
+        elif e.check == "actuation.not_tracking":
+            incidents.append(Incident("R2", 2, f"joint {e.component}: follower doesn't track its leader "
+                                               f"anywhere in this robot's data (correlation "
+                                               f"{e.evidence['corr']:.2f})", e))
         elif e.check == "sensing.camera_lag":
             incidents.append(Incident("R1b", 2, f"camera {short(e.component)} runs {e.evidence['lag_frames']} frames "
                                                 f"({e.evidence['lag_ms']:.0f} ms) behind the joints", e))
@@ -195,8 +203,7 @@ def _anchor_incident(x: Explained, events: list[Event], cov: Coverage) -> Incide
         missing = ", ".join(short(c) for c in cov.cameras_missing) or "video not checked"
         return Incident("R0", 4, f"{_what(a)} {_t(a)}: sensing unavailable ({missing}), so this can't be "
                                  f"called a policy failure", None, a, x.context)
-    standing = [e for e in events if e.check in ("actuation.rest_offset", "sensing.camera_lag",
-                                                  "sensing.duplicated_rows")]
+    standing = [e for e in events if e.check in STANDING]
     if standing:
         names = ", ".join(sorted({e.fingerprint for e in standing}))
         return Incident("R5", 4, f"{_what(a)} {_t(a)} on an episode with a standing fault ({names}); "

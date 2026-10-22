@@ -27,7 +27,8 @@ TIE_S = 0.2
 ANCHORS = {"task.stall", "task.missed_grasp_sequence", "actuation.not_following"}
 # Conditions that hold for a whole episode. They're reported on their own and never
 # picked as the thing that started one particular failure.
-STANDING = {"sensing.camera_lag", "actuation.rest_offset", "sensing.duplicated_rows"}
+STANDING = {"sensing.camera_lag", "actuation.rest_offset", "sensing.duplicated_rows",
+            "actuation.gain_mismatch", "actuation.not_tracking"}
 INTEGRITY_PREFIX = "integrity."
 
 
