@@ -171,10 +171,12 @@ def findings(joints: list[dict], video: list[dict]) -> dict:
             "episode_rungs": dict(sorted(rung_full.items())),
             "incident_rungs": dict(sorted(inc_full.items())),
             "robots_with_lag": len(by_robot),
-            "lag_medians": dict(Counter(l["median_lag"] for l in lags if l["n"] >= 2)),
+            "lag_streams": len([l for l in lags if l["n"] >= 2]),
+            "lag_by_frame": dict(sorted(Counter(int(np.floor(l["median_lag"] + 0.5)) for l in lags
+                                                if l["n"] >= 2).items())),
             "camera_streams_lag_ge_3": len(lagged),
             "robots_lag_ge_3": len({l["robot_id"] for l in lagged}),
-            "lag_spread_frames": (max(l["median_lag"] for l in lags if l["n"] >= 2) -
-                                  min(l["median_lag"] for l in lags if l["n"] >= 2)) if lags else None,
+            "lag_max_frames": max((l["median_lag"] for l in lags if l["n"] >= 2), default=None),
+            "camera_streams_lag_negative": len([l for l in lags if l["n"] >= 2 and l["median_lag"] < 0]),
         },
     }
