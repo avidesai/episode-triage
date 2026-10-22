@@ -1,0 +1,31 @@
+[project]
+name = "episode_triage"
+version = "0.1.0"
+description = "Triage robot episode logs: find where progress stopped, which layer started it, and who should fix it."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Avi Desai" }]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "pyarrow>=14",
+    "av>=12",
+    "huggingface_hub>=0.24",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+triage = "episode_triage.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["episode_triage*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
