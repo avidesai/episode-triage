@@ -8,8 +8,12 @@ from html import escape
 import numpy as np
 
 
+MAX_POINTS = 360
+
+
 def _path(xs, ys) -> str:
-    pts = [(x, y) for x, y in zip(xs, ys) if np.isfinite(y)]
+    step = max(1, len(xs) // MAX_POINTS)
+    pts = [(x, y) for x, y in zip(xs[::step], ys[::step]) if np.isfinite(y)]
     if not pts:
         return ""
     return "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in pts)
@@ -22,7 +26,7 @@ def timeline(t: np.ndarray, panels: list[dict], bands: list[dict], width: int = 
     panels: [{"label": str, "series": [{"y": array, "cls": "a"|"b"|"c", "name": str}], "ylim": (lo, hi)}]
     bands:  [{"t0": s, "t1": s, "cls": "cause"|"anchor"|"context", "label": str}]
     """
-    left, right, top, gap = 8, 8, 18, 22
+    left, right, top, gap = 8, 8, 30, 22
     plot_w = width - left - right
     h = top + len(panels) * (panel_h + gap) + 16
     t0, t1 = float(t[0]), float(t[-1]) if len(t) > 1 else float(t[0]) + 1
@@ -31,12 +35,17 @@ def timeline(t: np.ndarray, panels: list[dict], bands: list[dict], width: int = 
         return left + (v - t0) / max(t1 - t0, 1e-9) * plot_w
 
     out = [f'<svg viewBox="0 0 {width} {h}" role="img" aria-label="{escape(title)}" class="tl">']
+    labelled = 0
     for b in bands:
         x0, x1 = X(max(b["t0"], t0)), X(min(b["t1"], t1))
         out.append(f'<rect class="band {b["cls"]}" x="{x0:.1f}" y="{top - 4}" width="{max(x1 - x0, 2):.1f}" '
                    f'height="{h - top - 12}"/>')
         if b.get("label"):
-            out.append(f'<text class="bandlabel {b["cls"]}" x="{x0 + 3:.1f}" y="{top + 6}">{escape(b["label"])}</text>')
+            anchor = "end" if x0 > left + 0.6 * plot_w else "start"
+            tx = x0 - 3 if anchor == "end" else x0 + 3
+            out.append(f'<text class="bandlabel {b["cls"]}" x="{tx:.1f}" y="{10 + 12 * (labelled % 2)}" '
+                       f'text-anchor="{anchor}">{escape(b["label"])}</text>')
+            labelled += 1
     for i, p in enumerate(panels):
         y0 = top + i * (panel_h + gap) + 12
         lo, hi = p.get("ylim") or _lim([s["y"] for s in p["series"]])

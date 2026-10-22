@@ -97,10 +97,12 @@ time, so no timing check on the clock can find anything. Reading each camera's p
 joints that move it, {_n(V['episodes_stale_camera'])} of {_n(V['episodes_all_cameras'])} sampled
 episodes from {_n(V['robots_stale_camera'])} robots had a camera that stopped updating while the arm
 was moving.</p>
-<p>Of the {_n(n_anchor)} stalls and missed grasp sequences in those episodes, {_n(began)} began with a
-sensing or actuation fault, and a triage that only looked at the task would have sent them to training
-as policy failures. Across all {_n(J['robots'])} robots, {_n(J['robots_any_actuation_ticket'])} carry
-a joint level fault worth a ticket.</p>
+<p>Before running it I predicted that at least a quarter of the stalls and missed grasp sequences
+would turn out to start with a sensing or actuation fault. It was {_n(began)} of {_n(n_anchor)}: in this
+teleoperated data nearly every stall is a person pausing, with fresh pictures and joints that track.
+What the cross check buys is that those {_n(training)} now go to training with the other layers checked
+rather than assumed. The faults it does find sit below the task: across all {_n(J['robots'])} robots,
+{_n(J['robots_any_actuation_ticket'])} carry a joint level fault worth a ticket, mostly calibration.</p>
 </div>
 """)
 
@@ -128,14 +130,15 @@ every camera and every joint was checked.</p><div class="ladder">""")
     if examples:
         h.append("<h2>Three episodes, one clock</h2>")
         h.append("""<p>Each panel shares one time axis. The red band is what started it, the blue band
-is what a person would have been called for. Cause is the earliest sensing or actuation event that
-began before the failure; anything that started after is context, never the cause.</p>""")
+is what a person would have been called for. Each plot is zoomed to the incident. Cause is the earliest
+sensing or actuation event that began before the failure; anything that started after is context, never
+the cause.</p>""")
         for ex in examples:
             top_i = ex["incidents"][ex["focus"]] if ex["incidents"] else None
             route = top_i["route"] if top_i else "clean"
-            h.append(f"<figure>{example_svg(ex)}<figcaption><b>{escape(ex['why'])}</b><br>"
-                     f'<span class="route">rung {top_i["rung"] if top_i else 0}, {top_i["rule"] if top_i else "R7"}: '
-                     f"{escape(route)}</span>"
+            h.append(f"<figure>{example_svg(ex)}<figcaption><b>{escape(ex['why'])}.</b>"
+                     f'<div class="route">rung {top_i["rung"] if top_i else 0} ({top_i["rule"] if top_i else "R7"}): '
+                     f"{escape(route)}</div>"
                      f"{escape(ex['robot_id'])}, episode {ex['episode']}</figcaption></figure>")
 
     # fleet pareto
@@ -148,28 +151,33 @@ more times on one. Joint and task checks on all {_n(J['episodes'])} episodes
     rows = [{"label": plain(t["fingerprint"]), "robots": t["robots"], "recurring": t["recurring"]} for t in top]
     h.append(f'<figure>{svg.bars(rows, "robots", "label", mark="recurring", note="robots affected")}'
              f'<figcaption>Robots affected, top {len(rows)} fingerprints by priority.</figcaption></figure>')
-    h.append('<div class="scroll"><table><tr><th>fingerprint</th><th>rung</th><th class="n">robots</th>'
-             '<th class="n">episodes</th><th>example route</th></tr>')
+    h.append('<div class="scroll"><table><tr><th>what</th><th>rung</th><th class="n">robots</th>'
+             '<th class="n">episodes</th></tr>')
     for t in top:
-        h.append(f'<tr><td><code>{escape(t["fingerprint"])}</code></td><td>{t["rung"]}</td>'
-                 f'<td class="n">{t["robots"]:,}</td><td class="n">{t["episodes"]:,}</td>'
-                 f'<td>{escape(t["example"])}</td></tr>')
+        h.append(f'<tr><td>{escape(plain(t["fingerprint"]))}<br><span class="muted">{escape(t["example"])}</span></td>'
+                 f'<td>{t["rung"]}</td><td class="n">{t["robots"]:,}</td><td class="n">{t["episodes"]:,}</td></tr>')
     h.append("</table></div>")
+    h.append("""<p class="note">The joint pass has no video, so task fingerprints (stalls, missed grasps) aren't
+ranked here: without the cameras checked they all go to rule 0. They're ranked on the video sample above.
+A rest offset can also be a weak servo sagging under load; load data would separate the two.</p>""")
 
     # camera lag
-    lm = {float(k): v for k, v in V["lag_medians"].items()}
-    if lm:
-        lag_rows = [{"label": f"{int(k)} frames ({k / 30 * 1000:.0f} ms at 30 fps)" if k >= 0 else f"{int(k)} frames",
-                     "count": v, "hot": k >= 3} for k, v in sorted(lm.items())]
+    lb = {int(k): v for k, v in V.get("lag_by_frame", {}).items()}
+    if lb:
+        lag_rows = [{"label": (f"{k} frame{'' if k == 1 else 's'} ({round(k * 1000 / 30)} ms at 30 fps)" if k >= 0
+                               else f"{k} frames (camera ahead: estimate suspect)"),
+                     "count": v, "hot": k >= 3} for k, v in sorted(lb.items())]
         h.append("<h2>Camera to joint lag</h2>")
         h.append(f"""<p>The delay at which a camera's image change best lines up with the motion of the
-joints it sees, as a median over each robot's sampled episodes. A single episode's estimate moves by a
-frame, so this is judged per robot. {_n(V['camera_streams_lag_ge_3'])} camera streams on
-{_n(V['robots_lag_ge_3'])} robots trail their joints by 3 frames or more, and the spread across robots is
-{V['lag_spread_frames']:g} frames: merged for training, those datasets disagree about when the gripper
-saw the object.</p>""")
+joints it sees, as a median over each robot's sampled episodes (one episode's estimate moves by a frame,
+so this is judged per robot). Most of the {_n(V['lag_streams'])} camera streams sit at 0 to 2 frames.
+{_n(V['camera_streams_lag_ge_3'])} streams on {_n(V['robots_lag_ge_3'])} robots trail their joints by
+3 frames (100 ms) or more, up to {V['lag_max_frames']:g}. Merged for training, those datasets disagree
+about when the gripper saw the object. {_n(V['camera_streams_lag_negative'])} streams estimate the camera
+ahead of the joints, which shouldn't happen and most likely means the estimate is wrong for them.</p>""")
         h.append(f'<figure>{svg.bars(lag_rows, "count", "label", mark="hot", note="camera streams by median lag")}'
-                 f"<figcaption>Camera streams by median lag (robots with 2 or more estimated episodes).</figcaption></figure>")
+                 f"<figcaption>Camera streams by median lag, rounded to the nearest frame (robots with 2 or more "
+                 f"estimated episodes).</figcaption></figure>")
 
     # validation
     h.append("<h2>Does it find what it says it finds?</h2>")
@@ -276,19 +284,22 @@ def readme_finding(F, top) -> str:
         f"from {V['robots']:,} robots with every camera checked, {V['episodes_stale_camera']:,} episodes on "
         f"{V['robots_stale_camera']:,} robots had at least one camera stop updating for 3 frames or more while "
         f"the joints it sees were moving ({V['stale_runs']:,} runs, {V['stale_frames']:,} frames, median run "
-        f"{V['stale_run_frames_median']:g} frames). Every one of those episodes has a perfect timestamp column.",
-        f"- **Task failures that weren't the task.** Of {n_anchor:,} stalls and missed grasp sequences in those "
-        f"episodes, {began:,} began with a sensing or actuation fault and {training:,} went to training with "
-        f"healthy inputs; the rest went to a person. A triage that only looked at the task would have labeled all "
-        f"{n_anchor:,} as policy failures.",
+        f"{V['stale_run_frames_median']:g} frames). Every one of those episodes has a perfect timestamp column. "
+        f"I predicted at least 1 in 10 beforehand; it was 1 in {V['episodes_all_cameras'] / max(V['episodes_stale_camera'], 1):.0f}.",
+        f"- **My prediction about stalls was wrong.** I wrote down beforehand that at least a quarter of stalls "
+        f"and missed grasp sequences would start with a sensing or actuation fault. It was {began:,} of "
+        f"{n_anchor:,}. In teleoperated data nearly every stall is a person pausing with fresh pictures and "
+        f"joints that track; {training:,} went to training with every layer checked, and the rest went to a "
+        f"person because a standing fault or a near tie made the call unsafe.",
         f"- **Joint level faults across the fleet.** {J['robots_any_actuation_ticket']:,} of {J['robots']:,} "
         f"robots carry at least one actuation ticket: {J['robots_gain_mismatch']:,} with leader and follower "
         f"calibrated over different spans, {J['robots_not_tracking']:,} with a joint whose follower doesn't track "
         f"its leader, {J['robots_rest_offset']:,} with a follower offset at rest, and {J['robots_bus_glitch']:,} "
         f"with impossible one frame jumps (bad bus reads).",
-        f"- **Camera lag differs by robot.** {V['camera_streams_lag_ge_3']:,} camera streams on "
-        f"{V['robots_lag_ge_3']:,} robots trail their joints by 3 frames (100 ms) or more, and median lag spans "
-        f"{V['lag_spread_frames']:g} frames across robots.",
+        f"- **Camera lag differs by robot.** Most of {V['lag_streams']:,} camera streams trail their joints by 0 "
+        f"to 2 frames; {V['camera_streams_lag_ge_3']:,} streams on {V['robots_lag_ge_3']:,} robots trail by 3 "
+        f"frames (100 ms) or more, up to {V['lag_max_frames']:g}. {V['camera_streams_lag_negative']} streams "
+        f"estimate the camera ahead of the joints, which most likely means the estimate is wrong there.",
         "",
         "Top fingerprints by priority across all robots:",
         "",

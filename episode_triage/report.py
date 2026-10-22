@@ -90,8 +90,20 @@ def make_examples(results: Path, picks: list[tuple[str, int, str, str]]) -> None
 
 
 def _example_svg(ex: dict) -> str:
-    s = ex["series"]
+    s = dict(ex["series"])
     t = np.array(s["t"])
+    top = ex["incidents"][ex["focus"]] if ex["incidents"] else None
+    if top:
+        # Zoom to the incident: from 3 s before whatever started it to 1.5 s after it ends.
+        evs = [e for e in (top.get("cause"), top.get("anchor")) if e]
+        lo = max(0.0, min(e["t_start"] for e in evs) - 3.0)
+        hi = min(float(t[-1]), max(e["t_end"] for e in evs) + 1.5)
+        keep = (t >= lo) & (t <= hi)
+        t = t[keep]
+        for k in ("joint_cmd", "joint_pos", "gripper_cmd", "gripper_pos"):
+            if s[k]:
+                s[k] = list(np.array(s[k])[keep])
+        s["cams"] = {k: {kk: list(np.array(vv)[keep]) for kk, vv in c.items()} for k, c in s["cams"].items()}
     panels = [{"label": f"{s['joint'].replace('_', ' ')}: command and position, % of range",
                "series": [{"y": np.array(s["joint_cmd"]), "cls": "b", "name": "command (leader)"},
                           {"y": np.array(s["joint_pos"]), "cls": "a", "name": "position (follower)"}]}]
@@ -105,7 +117,6 @@ def _example_svg(ex: dict) -> str:
                        "series": [{"y": np.array(s["gripper_cmd"]), "cls": "b", "name": "command"},
                                   {"y": np.array(s["gripper_pos"]), "cls": "a", "name": "position"}]})
     bands = []
-    top = ex["incidents"][ex["focus"]] if ex["incidents"] else None
     if top:
         if top.get("anchor"):
             a = top["anchor"]
@@ -116,8 +127,9 @@ def _example_svg(ex: dict) -> str:
                 bands.append({"t0": c["t_start"], "t1": max(c["t_end"], c["t_start"] + 0.15), "cls": "cause",
                               "label": "what started it"})
     for e in ex["events"]:
-        if e["check"] == "sensing.stale_camera" and not any(abs(b["t0"] - e["t_start"]) < 1e-6 for b in bands):
-            bands.append({"t0": e["t_start"], "t1": e["t_end"] + 0.05, "cls": "context", "label": ""})
+        if (e["check"] == "sensing.stale_camera" and e["confidence"] != "low"
+                and not any(abs(b["t0"] - e["t_start"]) < 1e-6 for b in bands)):
+            bands.append({"t0": e["t_start"], "t1": e["t_end"] + 0.05, "cls": "cause", "label": ""})
     return svg.timeline(t, panels, bands, title=ex["why"])
 
 
