@@ -138,7 +138,7 @@ Camera delayed by 3 frames: the lag estimate moved by 3 plus or minus 1 on 37 of
 
 Raw rows are in `results/inject_eval.json`.
 
-**Bench set on a physical arm:** the recorder and protocol are in `recorder/`; `triage bench-eval` scores it and `triage report` adds it here.
+**Bench set on a physical arm: not recorded yet.** The recorder and run sheet are in `recorder/` but haven't been run on hardware. `triage bench-eval` scores the set and `triage report` adds it here once it exists.
 <!-- VALIDATION:end -->
 
 ## Run it
@@ -169,7 +169,8 @@ dataset plus a sidecar with what the format drops: real loop timing, the true ag
 camera frame, servo load, temperature, voltage and status, and an exact log of injected faults
 (camera freeze, camera delay, torque cut on one joint, calibration shift, and operator
 performed ones on a cue). `recorder/PROTOCOL.md` is the run sheet; `triage bench-eval` scores
-the tool against it.
+the tool against it. The recorder is written against LeRobot 0.6.1 and checked against 0.6.2,
+but it hasn't been run on hardware yet, so the first session starts with a dry run.
 
 ## What's wrong with it
 

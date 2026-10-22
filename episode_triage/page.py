@@ -239,8 +239,9 @@ on overload" or "brownout".</li>
 <li><b>Every takeover</b> with the progress score and subsystem health at that moment. Each one is a
 labeled anchor.</li>
 </ul>
-<p>The flight recorder in <code>recorder/</code> logs the first four on an SO 101 as a sidecar to a
-normal LeRobot dataset.</p>""")
+<p>The flight recorder in <code>recorder/</code> is written to log the first four on an SO 101 as a
+sidecar to a normal LeRobot dataset, with a scheduled fault injector and a run sheet. It hasn't been run on
+hardware yet; recording that bench set is the next step, and the report adds its table when it exists.</p>""")
 
     # what's wrong
     h.append("<h2>What's wrong with it</h2>")
@@ -255,7 +256,8 @@ policy failing.</li>
 are an upper bound.</li>
 <li>The video checks ran on a seeded sample ({V['robots']:,} robots, up to 3 episodes each), not every
 episode.</li>
-<li>Injected faults are cleaner than natural ones.</li>
+<li>Every validation number on this page comes from faults injected in software. None comes from
+a physical fault on a real arm yet, and injected faults are cleaner than natural ones.</li>
 </ul>
 <p>More, and what I'd build next, in the <a href="{repo}#whats-wrong-with-it">README</a>.</p>""")
 
@@ -361,6 +363,7 @@ def readme_validation(inj, bench) -> str:
                       f"{sf.get('true_stale', 0)} true, {sf.get('caught', 0)} caught, {sf.get('missed', 0)} missed, "
                       f"{sf.get('false_alarm', 0)} false alarms; {len(bench['rows'])} scheduled faults scored."]
     else:
-        lines += ["", "**Bench set on a physical arm:** the recorder and protocol are in `recorder/`; "
-                      "`triage bench-eval` scores it and `triage report` adds it here."]
+        lines += ["", "**Bench set on a physical arm: not recorded yet.** The recorder and run sheet are in "
+                      "`recorder/` but haven't been run on hardware. `triage bench-eval` scores the set and "
+                      "`triage report` adds it here once it exists."]
     return "\n".join(lines)
