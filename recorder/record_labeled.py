@@ -15,7 +15,7 @@ format throws away:
 Faults are applied inside the same loop on a fixed schedule from the command line, so
 the log and the injection can't disagree.
 
-Built against lerobot 0.6.1. Run every hardware step yourself, with the arm low over the
+Built against lerobot 0.6.1 and checked against 0.6.2. Run every hardware step yourself, with the arm low over the
 table and a hand near it for torque_off.
 
 Example:
@@ -101,7 +101,7 @@ def main():
         dataset = LeRobotDataset.resume(a.repo_id, root=a.root)
     else:
         dataset = LeRobotDataset.create(a.repo_id, fps=a.fps, features=features, root=a.root,
-                                        robot_type=robot.name, use_videos=True)
+                                        robot_type="so101_follower", use_videos=True)
     (a.root / "sidecar").mkdir(parents=True, exist_ok=True)
     motors = list(robot.bus.motors)
 
