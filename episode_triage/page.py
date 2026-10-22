@@ -133,13 +133,14 @@ every camera and every joint was checked.</p><div class="ladder">""")
 is what a person would have been called for. Each plot is zoomed to the incident. Cause is the earliest
 sensing or actuation event that began before the failure; anything that started after is context, never
 the cause.</p>""")
-        for ex in examples:
+        for n_ex, ex in enumerate(examples, 1):
             top_i = ex["incidents"][ex["focus"]] if ex["incidents"] else None
             route = top_i["route"] if top_i else "clean"
             h.append(f"<figure>{example_svg(ex)}<figcaption><b>{escape(ex['why'])}.</b>"
                      f'<div class="route">rung {top_i["rung"] if top_i else 0} ({top_i["rule"] if top_i else "R7"}): '
                      f"{escape(route)}</div>"
-                     f"{escape(ex['robot_id'])}, episode {ex['episode']}</figcaption></figure>")
+                     f"Community example {n_ex}; dataset ids are in <code>results/examples.json</code>, "
+                     f"not on this page.</figcaption></figure>")
 
     # fleet pareto
     h.append("<h2>What to fix first, across the fleet</h2>")
@@ -194,14 +195,21 @@ included.</p>""")
                  "stall": "joint stalls for 1.5 s", "offset": "joint offset 8% of range",
                  "glitch": "3 bad reads on one motor", "stale_state": "joint stream repeats 6 frames"}
         h.append('<div class="scroll"><table><tr><th>injected fault</th><th class="n">n</th><th class="n">caught</th>'
-                 '<th class="n">missed</th><th class="n">right rung</th><th class="n">other new events</th></tr>')
+                 '<th class="n">low conf.</th><th class="n">missed</th><th class="n">abstained</th>'
+                 '<th class="n">right rung</th><th class="n">other new events</th></tr>')
         for k, v in S["faults"].items():
             h.append(f'<tr><td>{names.get(k, k)}</td><td class="n">{v["n"]}</td><td class="n">{v["caught"]}</td>'
-                     f'<td class="n">{v["missed"]}</td><td class="n">{v["right_rung"]}</td>'
+                     f'<td class="n">{v["caught_low_confidence"]}</td><td class="n">{v["missed"]}</td>'
+                     f'<td class="n">{v["abstained"]}</td><td class="n">{v["right_rung"]}</td>'
                      f'<td class="n">{v["new_other_events"]}</td></tr>')
         L = S["lag"]
         h.append("</table></div>")
-        h.append(f"""<p class="note">Camera delayed by 3 frames: the lag estimate moved by 3 plus or minus 1 on
+        h.append(f"""<p class="note">"Low conf." means the detector found the frozen run but the camera barely shows
+the arm moving, so the run is logged and the ladder doesn't act on it; that guard is what keeps a camera
+pointed away from the arm from being blamed for a stall, and it costs recall on more than half these
+episodes. "Abstained" means the episode had fewer than two rest periods, so a resting offset couldn't be
+measured. A freeze scored at rung 3 started after a stall, so it was correctly context. Camera delayed by
+3 frames: the lag estimate moved by 3 plus or minus 1 on
 {L['within_1_of_3']} of {L['estimated']} episodes where both estimates existed ({L['n']} tried). "Other new
 events" counts anything else the injection made fire. Injected faults test the detectors and the ladder;
 they don't test whether natural faults look the same.</p>""")
@@ -301,7 +309,8 @@ def readme_finding(F, top) -> str:
         f"frames (100 ms) or more, up to {V['lag_max_frames']:g}. {V['camera_streams_lag_negative']} streams "
         f"estimate the camera ahead of the joints, which most likely means the estimate is wrong there.",
         "",
-        "Top fingerprints by priority across all robots:",
+        "Top sensing and actuation fingerprints by priority across all robots (task fingerprints need the "
+        "cameras checked, so they're ranked on the video sample in the report):",
         "",
         "| fingerprint | rung | robots | episodes |",
         "|---|---|---|---|",
@@ -328,12 +337,19 @@ def readme_validation(inj, bench) -> str:
         f"include natural freezes, so that second number is an upper bound). Then every threshold was frozen and "
         f"the faults below were scored on different robots.",
         "",
-        "| injected fault | n | caught | missed | right rung | other new events |",
-        "|---|---|---|---|---|---|",
+        "| injected fault | n | caught | low confidence | missed | abstained | right rung | other new events |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for k, v in S["faults"].items():
-        lines.append(f"| {FAULT_NAMES.get(k, k)} | {v['n']} | {v['caught']} | {v['missed']} | {v['right_rung']} | "
-                     f"{v['new_other_events']} |")
+        lines.append(f"| {FAULT_NAMES.get(k, k)} | {v['n']} | {v['caught']} | {v['caught_low_confidence']} | "
+                     f"{v['missed']} | {v['abstained']} | {v['right_rung']} | {v['new_other_events']} |")
+    lines += ["", "**Low confidence** means the detector found the frozen run, but that camera barely shows the arm "
+                  "moving, so the run is logged and the ladder doesn't act on it. That guard is what stopped "
+                  "cameras that can't see the arm from being blamed for stalls in the fleet run, and on these "
+                  "episodes it costs more than half the recall. It is defined as 3 times the stale threshold, so "
+                  "freezing that threshold at 0.51 made the guard stricter too; I didn't retune it on the test "
+                  "robots. **Abstained** means the episode had fewer than two rest periods, so a resting offset "
+                  "can't be measured in it."]
     L = S["lag"]
     lines += ["", f"Camera delayed by 3 frames: the lag estimate moved by 3 plus or minus 1 on {L['within_1_of_3']} "
                   f"of {L['estimated']} episodes where both estimates existed ({L['n']} tried). Shifts seen: "

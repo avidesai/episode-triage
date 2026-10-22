@@ -241,10 +241,15 @@ def summarize(rows: list[dict], lag_rows: list[dict]) -> dict:
     table = {}
     for k, rs in sorted(by.items()):
         rung_ok = sum(1 for r in rs if r["caught"] and r["rung"] == r["expect_rung"])
+        rung_other = dict(Counter(str(r["rung"]) for r in rs if r["caught"] and r["rung"] is not None
+                                  and r["rung"] != r["expect_rung"]))
         abstained = sum(1 for r in rs if not r["caught"] and r.get("rest_periods", 99) < 2)
-        table[k] = {"n": len(rs), "caught": sum(r["caught"] for r in rs),
+        # A caught freeze that no incident uses was low confidence: the camera barely shows the
+        # arm moving, so the run is logged as evidence and the ladder doesn't act on it.
+        low = sum(1 for r in rs if r["caught"] and r["rung"] is None)
+        table[k] = {"n": len(rs), "caught": sum(r["caught"] for r in rs) - low, "caught_low_confidence": low,
                     "missed": sum(not r["caught"] for r in rs) - abstained, "abstained": abstained,
-                    "right_rung": rung_ok, "rungs": dict(Counter(str(r["rung"]) for r in rs)),
+                    "right_rung": rung_ok, "other_rungs": rung_other,
                     "new_other_events": sum(r["new_other_events"] for r in rs)}
     shifts = [r["shift"] for r in lag_rows if r["shift"] is not None]
     return {"faults": table, "lag": {"n": len(lag_rows), "estimated": len(shifts),
