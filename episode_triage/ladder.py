@@ -111,6 +111,10 @@ def _cause_rule(e: Event, all_events: list[Event]) -> tuple[str, int, str, str |
     if e.check == "actuation.pinned":
         return ("R2", 2, f"joint {e.component}: pinned at its {e.evidence['limit']} for {e.duration:.1f} s "
                          f"{_t(e)} while commanded further; joint limit or calibration range", None)
+    if e.check == "actuation.command_wrap":
+        return ("R2", 2, f"recalibrate {e.component}: the leader's reading wrapped past its end {_t(e)} "
+                         f"(a jump of {abs(e.evidence['jump']) * 100:.0f}% of range in one frame), so the follower "
+                         f"was sent the long way round", None)
     if e.check == "actuation.bus_glitch":
         n = sum(1 for x in all_events if x.check == e.check and x.component == e.component)
         if n >= THRESHOLDS["glitch_ticket_count"]:
@@ -124,6 +128,9 @@ def short(cam: str) -> str:
 
 
 def triage(events: list[Event], cov: Coverage) -> list[Incident]:
+    # A low confidence frozen camera (one that barely sees the arm move) stays in the events
+    # as evidence but never starts an incident, causes a stall, or counts toward a ticket.
+    events = [e for e in events if not (e.check == "sensing.stale_camera" and e.confidence == "low")]
     integrity = [e for e in events if e.check.startswith(INTEGRITY_PREFIX)]
     # R0: the episode itself can't be trusted. One line saying what's missing, no category.
     fatal = [e for e in integrity if e.component in ("joint_stream", "episode")]
@@ -162,7 +169,7 @@ def triage(events: list[Event], cov: Coverage) -> list[Incident]:
             rule, rung, route, fix = _cause_rule(e, events)
             incidents.append(Incident(rule, rung, route, e, self_recovery=fix,
                                       related=[x for x in same if x is not e] if n >= THRESHOLDS["glitch_ticket_count"] else []))
-        elif e.check == "actuation.pinned":
+        elif e.check in ("actuation.pinned", "actuation.command_wrap"):
             rule, rung, route, fix = _cause_rule(e, events)
             incidents.append(Incident(rule, rung, route, e))
         elif e.check == "actuation.rest_offset":

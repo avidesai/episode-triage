@@ -172,6 +172,10 @@ def open_robot(root: str | Path, robot_id: str | None = None,
     for key in ("action", "observation.state"):
         if key not in info["features"]:
             raise ValueError(f"{root}: no {key!r} feature, nothing to triage")
+    na, ns = info["features"]["action"]["shape"][0], info["features"]["observation.state"]["shape"][0]
+    if na != ns:
+        raise ValueError(f"{root}: action has {na} values and state has {ns}; command and measurement "
+                         f"can't be paired joint by joint")
 
     ep_files = sorted((root / "meta" / "episodes").glob("chunk-*/file-*.parquet"))
     if not ep_files:

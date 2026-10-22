@@ -45,6 +45,7 @@ The order things were set in matters, so it is recorded here:
 | `calib_min_span` | 0.25 | Gain is judged only on joints commanded over a quarter of the arm's median span. Added after the healthy data check found nearly every "not tracking" robot was a wrist roll that never moved. |
 | `glitch_jump` | 0.25 | An STS3215 tops out near 9 degrees per frame at 30 fps, far below a quarter of a joint's range. A jump that size that comes back within 3 frames is a bad read. |
 | `glitch_ticket_count` | 3 | One bad read is logged. Three on one motor in one episode is a bus or harness ticket. |
+| `wrap_jump` | 0.5 | A one frame command jump over half the joint's range that doesn't come back within 3 frames is the leader's angle wrapping past its end. Added after reading the fleet output: an episode flagged "wrist_roll sagging" turned out to be the leader jumping from +180 to -180 degrees and the follower spinning the long way round. It replaces a symptom with the cause. |
 | `pin_margin`, `pin_push` | 0.01, 0.05 | Within 1% of the joint's observed extreme while the leader pushes 5% past it and is still moving. The moving condition was added after the healthy data check: a parked arm resting on its stop is the normal rest pose. |
 
 ## Task

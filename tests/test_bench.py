@@ -38,10 +38,12 @@ def write_dataset(root, episodes):
 def test_reader_and_bench_eval(tmp_path):
     a0, s0 = trajectory(seed=0)
     a1, s1 = trajectory(seed=1)
-    # episode 1: wrist_flex torque cut from 8.0 to 10.0 s, the joint sags under gravity
+    # episode 1: wrist_flex torque cut from 8.0 to 10.0 s; the joint drops under gravity
+    # within half a second and hangs there until torque comes back
     lo, hi = int(8.0 * FPS), int(10.0 * FPS)
     s1 = s1.copy()
-    s1[lo:hi, 3] = s1[lo, 3] - np.linspace(0, 25, hi - lo)
+    drop = np.minimum(np.arange(hi - lo) / (0.5 * FPS), 1.0) * 25
+    s1[lo:hi, 3] = s1[lo, 3] - drop
     write_dataset(tmp_path, [(a0, s0), (a1, s1)])
     side = tmp_path / "sidecar"
     side.mkdir()

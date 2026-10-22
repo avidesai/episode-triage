@@ -58,10 +58,14 @@ def ledger_rows(robots: list[dict], source: str) -> list[dict]:
     return rows
 
 
-def rank_fingerprints(rows: list[dict], top: int | None = None) -> list[dict]:
+def rank_fingerprints(rows: list[dict], top: int | None = None, layers: tuple[str, ...] | None = None) -> list[dict]:
     by = defaultdict(list)
     for r in rows:
         if r["rung"] == 0 or r["fingerprint"] == "unknown":
+            continue
+        if layers and r["layer"] not in layers:
+            continue
+        if r["fingerprint"].startswith("integrity."):
             continue
         by[r["fingerprint"]].append(r)
     out = []

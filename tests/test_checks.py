@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from episode_triage.checks import (THRESHOLDS, build_profile, check_bus_glitch, check_missed_grasp,
+from episode_triage.checks import (THRESHOLDS, build_profile, check_bus_glitch, check_command_wrap, check_missed_grasp,
                                    check_not_following, check_rest_offset, check_stale_camera,
                                    check_stale_state, check_stall, episode_signals)
 from episode_triage.inject import inject_glitches, inject_offset, inject_stale_state, inject_stall
@@ -15,21 +15,19 @@ GRIP = [5]
 
 
 def trajectory(seconds=20, seed=0, pause=None):
-    """Smooth leader motion with rest periods, a follower trailing it by 3 frames, and
-    gripper closes that alternate between holding and empty."""
+    """Smooth leader motion with rest periods, a follower trailing it by 3 frames, and the
+    gripper parked open. Rest periods stop the motion's clock, so nothing ever jumps."""
     n = int(seconds * FPS)
-    t = np.arange(n) / FPS
     rng = np.random.default_rng(seed)
+    moving = np.ones(n, bool)
+    for k in range(1, int(seconds // 5)):           # every 5 s the leader holds still for 1.5 s
+        moving[int(5 * k * FPS):int((5 * k + 1.5) * FPS)] = False
+    if pause:
+        moving[int(pause[0] * FPS):int(pause[1] * FPS)] = False
+    phase = np.cumsum(moving) / FPS
     a = np.zeros((n, 6))
     for j in range(5):
-        a[:, j] = 40 * np.sin(1.2 * t + j) + 5 * rng.normal(0, 0.01, n)
-    # rest periods: every 5 s the leader holds still for 1.5 s
-    for k in range(1, int(seconds // 5)):
-        lo, hi = int(5 * k * FPS), int((5 * k + 1.5) * FPS)
-        a[lo:hi, :5] = a[lo, :5]
-    if pause:
-        lo, hi = int(pause[0] * FPS), int(pause[1] * FPS)
-        a[lo:, :5] = np.concatenate([np.repeat(a[lo:lo + 1, :5], hi - lo, 0), a[lo:n - (hi - lo), :5]])
+        a[:, j] = 40 * np.sin(1.2 * phase + j) + 5 * rng.normal(0, 0.01, n)
     a[:, 5] = 40
     s = np.stack([shift(a[:, j], 3) for j in range(6)], 1)
     return a, s
@@ -145,3 +143,21 @@ def test_stale_camera_needs_motion_and_low_change():
 def test_thresholds_are_fractions():
     for k in ("follow_err", "offset_err", "glitch_jump", "empty_gap", "holding_gap"):
         assert 0 < THRESHOLDS[k] < 1
+
+
+def test_command_wrap_is_not_a_glitch_and_explains_the_tracking_loss():
+    from episode_triage.ladder import Coverage, triage
+    a, s = trajectory()
+    rng = build_profile(a, s, GRIP).ranges
+    t = int(8.0 * FPS)
+    a2 = a.copy()
+    a2[t:, 4] -= 0.9 * rng[4]                       # leader wraps and stays wrapped
+    s2 = np.stack([shift(a2[:, j], 3) for j in range(6)], 1)
+    s2[t + 3:t + 33, 4] = np.linspace(s[t + 3, 4], s2[t + 33, 4], 30)   # follower travels the long way
+    sig, prof = sig_prof(a2, s2, prof_from=(a, s))
+    assert check_bus_glitch(sig) == []
+    wraps = check_command_wrap(sig)
+    assert [(w.component, w.start) for w in wraps] == [("wrist_roll", t)]
+    events = wraps + check_not_following(sig)
+    inc = triage(events, Coverage(cameras_checked=["x"]))
+    assert inc and inc[0].cause.check == "actuation.command_wrap" and inc[0].rung == 2

@@ -51,6 +51,8 @@ THRESHOLDS = {
     "glitch_return": 0.05,
     "glitch_return_frames": 3,
     "glitch_ticket_count": 3,
+    # A3b command wrap
+    "wrap_jump": 0.5,             # a one frame command jump over half the range that stays is an angle wrap
     # A4 pinned at a range limit
     "pin_margin": 0.01,
     "pin_push": 0.05,
@@ -344,11 +346,14 @@ def check_not_following(sig: EpisodeSignals) -> list[Event]:
         for a, b in runs(over, n_min):
             av = float(sig.a_speed[a:b, j].mean())
             sv = float(sig.s_speed[a:b, j].mean())
-            if av > T["moving"] and sv < 0.3 * av:
+            # Path length over the window, so a command that reverses inside it still counts as moving.
+            a_path = float(sig.a_speed[a:b, j].sum())
+            s_path = float(sig.s_speed[a:b, j].sum())
+            if a_path > 0.1 and s_path < 0.3 * a_path:
                 mode = "stalled"
-            elif av < 0.5 * T["moving"] and sv > 0.5 * T["moving"]:
+            elif a_path < 0.05 and s_path > 0.1:
                 mode = "sagging"
-            elif av > T["moving"]:
+            elif a_path > 0.1:
                 mode = "lagging"
             else:
                 mode = "held"
@@ -426,6 +431,26 @@ def check_bus_glitch(sig: EpisodeSignals) -> list[Event]:
                     out.append(Event("actuation.bus_glitch", "actuation", f"{side}.{sig.names[j]}", int(t),
                                      int(t) + 1, sig.fps, "high",
                                      {"jump": float(abs(v[t] - before))}))
+    return out
+
+
+def check_command_wrap(sig: EpisodeSignals) -> list[Event]:
+    """A3b. The leader's reading wraps past +-180 degrees in one frame and stays there.
+
+    No hand moves a joint half its range in 33 ms, and unlike a bad read it doesn't come
+    back. The follower is then told to go the long way round, which shows up a moment
+    later as the joint "not following". This is the cause; that is the symptom.
+    """
+    T = THRESHOLDS
+    out = []
+    k = T["glitch_return_frames"]
+    for j in sig.arm_idx:
+        v = sig.an[:, j]
+        for t in np.flatnonzero(np.abs(np.diff(v)) > T["wrap_jump"]) + 1:
+            after = v[t + 1:t + 1 + k]
+            if len(after) and np.min(np.abs(after - v[t - 1])) >= T["glitch_return"]:
+                out.append(Event("actuation.command_wrap", "actuation", sig.names[j], int(t), int(t) + 1,
+                                 sig.fps, "high", {"jump": float(v[t] - v[t - 1])}))
     return out
 
 
@@ -530,6 +555,7 @@ def run_parquet_checks(sig: EpisodeSignals, prof: RobotProfile) -> list[Event]:
     ev += check_rest_offset(sig)
     ev += check_calibration(sig, prof)
     ev += check_bus_glitch(sig)
+    ev += check_command_wrap(sig)
     ev += check_pinned(sig, prof)
     ev += check_stall(sig)
     ev += check_missed_grasp(sig, prof)

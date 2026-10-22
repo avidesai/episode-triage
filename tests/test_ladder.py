@@ -94,3 +94,10 @@ def test_route_text_has_no_dashes():
     for i in triage([joint, stall()], FULL):
         assert "-" not in i.route.replace("-0", "").replace("+", "") or True
         assert "—" not in i.route and "–" not in i.route
+
+
+def test_low_confidence_freeze_never_drives_the_ladder():
+    cam = Event("sensing.stale_camera", "sensing", "observation.images.top", int(9.5 * FPS), int(9.7 * FPS),
+                FPS, "low", {"frames": 6})
+    inc = triage([stall(), cam], FULL)
+    assert [(i.rule, i.rung) for i in inc] == [("R4", 3)]
