@@ -1,0 +1,144 @@
+"""triage: command line entry points.
+
+  triage run <dataset dir or hub repo id>      triage every episode of one dataset
+  triage fleet-joints <community root>         joint and task checks on every SO arm
+  triage fleet-video <community root>          video checks on a seeded random sample
+  triage inject-eval <community root>          software fault injection on real episodes
+  triage bench-eval <own dataset dir>          compare against the flight recorder's ground truth
+  triage report                                rebuild docs/ from results/
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+from .fleet import _json
+
+
+def cmd_run(a):
+    from .pipeline import profile_for, triage_episode
+    from .readers import open_robot
+
+    root = Path(a.dataset)
+    remote = None
+    if not root.exists():
+        from huggingface_hub import snapshot_download
+        rev = a.revision
+        root = Path(snapshot_download(a.dataset, repo_type="dataset", revision=rev,
+                                      allow_patterns=["meta/*", "meta/episodes/*/*", "data/*/*"]))
+        remote = (a.dataset, rev or "main")
+    robot = open_robot(root, robot_id=a.dataset, remote=remote)
+    prof = profile_for(robot)
+    eps = robot.episode_indices if a.episodes is None else [int(x) for x in a.episodes.split(",")]
+    out = Path(a.out) if a.out else None
+    rows = []
+    for i in eps:
+        r = triage_episode(robot.episode(i), prof, video=not a.no_video)
+        rows.append(r.to_dict())
+        print(f"episode {i:4d}  rung {r.rung}  " + ("; ".join(x.route for x in r.incidents) or "clean"))
+    if out:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text("\n".join(json.dumps(x, default=_json) for x in rows) + "\n")
+
+
+def cmd_fleet_joints(a):
+    from .fleet import fleet_joint_run
+    res = fleet_joint_run(a.root, Path(a.out), workers=a.workers)
+    n_err = sum("error" in r for r in res)
+    n_ep = sum(len(r.get("episodes", [])) for r in res)
+    print(f"{len(res)} robots, {n_ep} episodes, {n_err} robots failed to load")
+
+
+def cmd_fleet_video(a):
+    from concurrent.futures import ThreadPoolExecutor
+
+    from .fleet import pick_video_sample, run_video_sample, so_arm_dirs
+    dirs = so_arm_dirs(a.root)
+    picks = pick_video_sample(dirs, a.robots, a.episodes, a.seed)
+    out = Path(a.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    done = set()
+    if out.exists() and a.resume:
+        done = {json.loads(l)["robot_id"] for l in out.read_text().splitlines() if l.strip()}
+    todo = [(d, e) for d, e in picks if f"{d.parent.name}/{d.name}" not in done]
+    print(f"{len(picks)} robots sampled, {len(todo)} to run")
+    with ThreadPoolExecutor(a.workers) as ex, out.open("a" if a.resume else "w") as f:
+        for k, res in enumerate(ex.map(lambda p: run_video_sample(*p), todo), 1):
+            f.write(json.dumps(res, default=_json) + "\n")
+            f.flush()
+            tag = res.get("error", "ok")[:80]
+            print(f"[{k}/{len(todo)}] {res['robot_id']}: {tag}", flush=True)
+
+
+def cmd_inject_eval(a):
+    from .validate import inject_eval
+    inject_eval(Path(a.sample), Path(a.root), Path(a.out), seed=a.seed, n_calib=a.calib, n_test=a.test)
+
+
+def cmd_bench_eval(a):
+    from .validate import bench_eval
+    bench_eval(Path(a.dataset), Path(a.out))
+
+
+def cmd_report(a):
+    from .report import build
+    build(Path(a.results), Path(a.out))
+
+
+def main(argv=None):
+    p = argparse.ArgumentParser(prog="triage", description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    s = sub.add_parser("run", help="triage one dataset")
+    s.add_argument("dataset")
+    s.add_argument("--revision")
+    s.add_argument("--episodes", help="comma separated episode indices")
+    s.add_argument("--no-video", action="store_true")
+    s.add_argument("--out")
+    s.set_defaults(fn=cmd_run)
+
+    s = sub.add_parser("fleet-joints")
+    s.add_argument("root")
+    s.add_argument("--out", default="results/fleet_joints.jsonl")
+    s.add_argument("--workers", type=int, default=8)
+    s.set_defaults(fn=cmd_fleet_joints)
+
+    s = sub.add_parser("fleet-video")
+    s.add_argument("root")
+    s.add_argument("--robots", type=int, default=120)
+    s.add_argument("--episodes", type=int, default=3)
+    s.add_argument("--seed", type=int, default=7)
+    s.add_argument("--workers", type=int, default=3)
+    s.add_argument("--resume", action="store_true")
+    s.add_argument("--out", default="results/fleet_video.jsonl")
+    s.set_defaults(fn=cmd_fleet_video)
+
+    s = sub.add_parser("inject-eval")
+    s.add_argument("root")
+    s.add_argument("--sample", default="results/fleet_video.jsonl")
+    s.add_argument("--calib", type=int, default=20)
+    s.add_argument("--test", type=int, default=40)
+    s.add_argument("--seed", type=int, default=11)
+    s.add_argument("--out", default="results/inject_eval.json")
+    s.set_defaults(fn=cmd_inject_eval)
+
+    s = sub.add_parser("bench-eval")
+    s.add_argument("dataset")
+    s.add_argument("--out", default="results/bench_eval.json")
+    s.set_defaults(fn=cmd_bench_eval)
+
+    s = sub.add_parser("report")
+    s.add_argument("--results", default="results")
+    s.add_argument("--out", default="docs")
+    s.set_defaults(fn=cmd_report)
+
+    a = p.parse_args(argv)
+    a.fn(a)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

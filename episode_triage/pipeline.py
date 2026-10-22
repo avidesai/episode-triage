@@ -10,9 +10,9 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from .checks import (Event, RobotProfile, build_profile, chain_motion, check_camera_lag,
-                     check_stale_camera, check_video_integrity, episode_signals, image_energy,
-                     run_parquet_checks)
+from .checks import (FATAL, Event, RobotProfile, build_profile, chain_motion, check_camera_lag,
+                     check_integrity, check_stale_camera, check_video_integrity, episode_signals,
+                     image_energy, run_parquet_checks)
 from .ladder import Coverage, Incident, episode_rung, triage
 from .readers import Episode, RobotData
 from .video import VideoError
@@ -52,13 +52,18 @@ def profile_for(robot: RobotData) -> RobotProfile:
 
 def triage_episode(ep: Episode, prof: RobotProfile, video: bool = True,
                    keep_traces: bool = False, frames_override: dict | None = None) -> EpisodeResult:
-    sig = episode_signals(ep.action, ep.state, ep.fps, ep.joint_names, ep.gripper_idx, prof)
-    events = run_parquet_checks(sig, prof, ep.action, ep.state, ep.frame_index)
     cov = Coverage()
     ts_err = float(np.max(np.abs(ep.timestamp - ep.frame_index / ep.fps))) if ep.n else float("nan")
     facts = {"timestamp_max_dev_s": ts_err, "timestamps_synthetic": bool(ts_err < 1e-4),
              "duration_s": round(ep.duration_s, 2)}
     traces = {}
+    events = check_integrity(ep.action, ep.state, ep.frame_index, ep.fps)
+    if any(e.check in FATAL for e in events):
+        # Rule 0: nothing else is computed on an episode that can't be trusted.
+        return EpisodeResult(ep.robot_id, ep.episode_index, ep.fps, ep.n, events, triage(events, cov),
+                             cov, facts, traces)
+    sig = episode_signals(ep.action, ep.state, ep.fps, ep.joint_names, ep.gripper_idx, prof)
+    events += run_parquet_checks(sig, prof)
 
     if video and ep.cameras:
         energies, motions = {}, {}

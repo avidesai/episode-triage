@@ -36,12 +36,16 @@ THRESHOLDS = {
     "follow_err": 0.15,           # healthy SO followers stay under 0.07 at the 99th percentile
     "follow_min_s": 0.4,          # a limp or stalled servo passes 0.15 within a few hundred ms
     "follow_recover_s": 1.0,      # shorter than this and the robot cleared it itself
+    "follow_edge_s": 1.0,         # the follower is still converging from the reset when recording starts
     "moving": 0.01,               # fraction of range per frame
     # A2 calibration offset at rest
     "rest_speed": 0.005,
     "rest_min_s": 1.0,
     "offset_err": 0.05,           # healthy robots sit within 0.02 of their leader at rest
     "offset_agree": 0.8,          # share of rest segments that must agree in sign and size
+    "gain_err": 0.15,             # follower moves 15% more or less than its leader across the range
+    "track_min_r": 0.9,           # below this the follower isn't tracking the leader at all
+    "calib_min_span": 0.25,       # judge gain only on joints commanded over a quarter of the arm's span
     # A3 bus read glitch
     "glitch_jump": 0.25,          # an STS3215 can't move a quarter of its range in one frame
     "glitch_return": 0.05,
@@ -49,7 +53,7 @@ THRESHOLDS = {
     "glitch_ticket_count": 3,
     # A4 pinned at a range limit
     "pin_margin": 0.01,
-    "pin_push": 0.02,
+    "pin_push": 0.05,
     "pin_min_s": 0.5,
     # T1 stall
     "stall_speed": 0.005,
@@ -113,12 +117,21 @@ class RobotProfile:
     gripper_closed_low: dict[int, bool]
     gripper_active: dict[int, bool]
     gripper_closed_value: dict[int, float]   # the command at the closed end (1st or 99th pct)
+    gain: np.ndarray = None       # state ~ gain * lagged action + bias, per joint, normalized units
+    bias: np.ndarray = None
+    fit_r: np.ndarray = None
+    moved: np.ndarray = None      # joints commanded over enough of their range to judge calibration
 
 
 def build_profile(action: np.ndarray, state: np.ndarray, gripper_idx: list[int]) -> RobotProfile:
     ranges = joint_ranges(action, gripper_idx)
     an, sn = action / ranges, state / ranges
     lag = follow_lag(an, sn)
+    gain, bias, fit_r = fit_tracking(an, sn, lag)
+    p1, p99 = np.nanpercentile(action, [1, 99], axis=0)
+    span = p99 - p1
+    arm_i = [i for i in range(action.shape[1]) if i not in gripper_idx]
+    moved = span >= THRESHOLDS["calib_min_span"] * (np.median(span[arm_i]) if arm_i else 0)
     lo, hi = np.nanpercentile(state, [0.1, 99.9], axis=0)
     arm = [i for i in range(action.shape[1]) if i not in gripper_idx]
     arm_scale = np.median(ranges[arm]) if arm else 1.0
@@ -139,7 +152,33 @@ def build_profile(action: np.ndarray, state: np.ndarray, gripper_idx: list[int])
         gap_high = np.median((a - s)[high]) if high.any() else 0.0
         closed_low[g] = not (gap_high > gap_low + 0.02)
         closed_value[g] = float(a_lo if closed_low[g] else a_hi)
-    return RobotProfile(ranges, lag, lo, hi, closed_low, active, closed_value)
+    return RobotProfile(ranges, lag, lo, hi, closed_low, active, closed_value, gain, bias, fit_r, moved)
+
+
+def fit_tracking(an: np.ndarray, sn: np.ndarray, lag: np.ndarray):
+    """Fit state = gain * action(t - lag) + bias per joint over all of a robot's frames.
+
+    Leader and follower are calibrated separately, so on a real arm their readings can
+    differ by a gain as well as an offset: the error then grows with distance from the
+    middle of the range. Tracking loss is measured against this fit so a calibration
+    mismatch isn't read as the joint failing over and over. The fit itself is reported
+    (A2), and a follower that doesn't track at all shows up as a low correlation.
+    Gross outliers (contact, glitches) are dropped before a second fit.
+    """
+    J = an.shape[1]
+    gain, bias, r = np.ones(J), np.zeros(J), np.ones(J)
+    for j in range(J):
+        x, y = shift(an[:, j], int(lag[j])), sn[:, j]
+        ok = np.isfinite(x) & np.isfinite(y)
+        if ok.sum() < 30 or np.std(x[ok]) < 1e-9:
+            continue
+        k, b = np.polyfit(x[ok], y[ok], 1)
+        keep = ok & (np.abs(y - (k * x + b)) < 0.3)
+        if keep.sum() >= 30 and np.std(x[keep]) > 1e-9:
+            k, b = np.polyfit(x[keep], y[keep], 1)
+        gain[j], bias[j] = k, b
+        r[j] = float(np.corrcoef(x[ok], y[ok])[0, 1]) if np.std(y[ok]) > 1e-9 else 0.0
+    return gain, bias, r
 
 
 @dataclass
@@ -152,7 +191,8 @@ class EpisodeSignals:
     arm_idx: list[int]
     an: np.ndarray      # action / range
     sn: np.ndarray      # state / range
-    err: np.ndarray     # lag corrected tracking error, an(t - d) - sn(t)
+    err: np.ndarray     # tracking error against the robot's fit, gain * an(t - d) + bias - sn(t)
+    err_raw: np.ndarray # plain lag corrected error, an(t - d) - sn(t)
     a_speed: np.ndarray
     s_speed: np.ndarray
     rest: np.ndarray    # (T,) every joint's command still, neighbourhood smoothed
@@ -160,12 +200,14 @@ class EpisodeSignals:
 
 def episode_signals(action, state, fps, names, gripper_idx, prof: RobotProfile) -> EpisodeSignals:
     an, sn = action / prof.ranges, state / prof.ranges
-    err = np.stack([shift(an[:, j], int(prof.lag[j])) - sn[:, j] for j in range(an.shape[1])], 1)
+    lagged = np.stack([shift(an[:, j], int(prof.lag[j])) for j in range(an.shape[1])], 1)
+    err_raw = lagged - sn
+    err = prof.gain * lagged + prof.bias - sn
     a_speed, s_speed = speed(an), speed(sn)
     w = max(3, int(round(0.2 * fps)))
     rest = (rolling_max(a_speed, w) < THRESHOLDS["rest_speed"]).all(axis=1)
     arm = [i for i in range(an.shape[1]) if i not in gripper_idx]
-    return EpisodeSignals(fps, names, gripper_idx, arm, an, sn, err, a_speed, s_speed, rest)
+    return EpisodeSignals(fps, names, gripper_idx, arm, an, sn, err, err_raw, a_speed, s_speed, rest)
 
 
 def _frames(s: float, fps: float) -> int:
@@ -295,11 +337,14 @@ def check_not_following(sig: EpisodeSignals) -> list[Event]:
     T = THRESHOLDS
     out = []
     n_min = _frames(T["follow_min_s"], sig.fps)
+    edge = _frames(T["follow_edge_s"], sig.fps)
     for j in sig.arm_idx:
         e = sig.err[:, j]
         base = np.median(e[sig.rest]) if sig.rest.sum() >= _frames(T["rest_min_s"], sig.fps) else np.median(e)
         dev = np.abs(e - base)
-        for a, b in runs(dev > T["follow_err"], n_min):
+        over = dev > T["follow_err"]
+        over[:edge] = False
+        for a, b in runs(over, n_min):
             av = float(sig.a_speed[a:b, j].mean())
             sv = float(sig.s_speed[a:b, j].mean())
             if av > T["moving"] and sv < 0.3 * av:
@@ -333,7 +378,7 @@ def check_rest_offset(sig: EpisodeSignals) -> list[Event]:
         return []
     out = []
     for j in sig.arm_idx:
-        med = np.array([np.median(sig.err[a:b, j]) for a, b in segs])
+        med = np.array([np.median(sig.err_raw[a:b, j]) for a, b in segs])
         big = np.abs(med) > T["offset_err"]
         sign = np.sign(np.median(med))
         agree = float(np.mean(big & (np.sign(med) == sign)))
@@ -342,6 +387,25 @@ def check_rest_offset(sig: EpisodeSignals) -> list[Event]:
             out.append(Event("actuation.rest_offset", "actuation", sig.names[j], segs[0][0], segs[-1][1],
                              sig.fps, conf, {"offset": float(np.median(med)), "rest_segments": len(segs),
                                              "agree": agree}))
+    return out
+
+
+def check_calibration(sig: EpisodeSignals, prof: RobotProfile) -> list[Event]:
+    """A2b. Robot level: the follower covers a different span than its leader, or doesn't
+    track it at all. Reported on every episode of that robot as a standing condition."""
+    T = THRESHOLDS
+    out = []
+    n = len(sig.an)
+    for j in sig.arm_idx:
+        if prof.moved is not None and not prof.moved[j]:
+            continue    # a joint that barely moved can't show a gain, only its own noise
+        k, r = float(prof.gain[j]), float(prof.fit_r[j])
+        if r < T["track_min_r"]:
+            out.append(Event("actuation.not_tracking", "actuation", sig.names[j], 0, n, sig.fps, "high",
+                             {"corr": r, "gain": k}))
+        elif abs(k - 1) > T["gain_err"]:
+            out.append(Event("actuation.gain_mismatch", "actuation", sig.names[j], 0, n, sig.fps, "high",
+                             {"gain": k, "corr": r}))
     return out
 
 
@@ -380,6 +444,8 @@ def check_pinned(sig: EpisodeSignals, prof: RobotProfile) -> list[Event]:
         at_hi = (hi[j] - s < T["pin_margin"]) & (a > s + T["pin_push"])
         for end, mask in (("min", at_lo), ("max", at_hi)):
             for a0, b0 in runs(mask, _frames(T["pin_min_s"], sig.fps)):
+                if sig.a_speed[a0:b0, j].mean() < T["moving"]:
+                    continue    # resting against a stop with the leader also parked is the rest pose
                 out.append(Event("actuation.pinned", "actuation", sig.names[j], a0, b0, sig.fps, "medium",
                                  {"limit": end, "push": float(np.abs(a - s)[a0:b0].mean())}))
     return out
@@ -458,13 +524,14 @@ def check_missed_grasp(sig: EpisodeSignals, prof: RobotProfile) -> list[Event]:
     return out
 
 
-def run_parquet_checks(sig: EpisodeSignals, prof: RobotProfile, action, state, frame_index) -> list[Event]:
-    ev = check_integrity(action, state, frame_index, sig.fps)
-    if any(e.check == "integrity.nan" for e in ev):
-        return ev
-    ev += check_stale_state(sig, prof)
+FATAL = {"integrity.nan", "integrity.short"}
+
+
+def run_parquet_checks(sig: EpisodeSignals, prof: RobotProfile) -> list[Event]:
+    ev = check_stale_state(sig, prof)
     ev += check_not_following(sig)
     ev += check_rest_offset(sig)
+    ev += check_calibration(sig, prof)
     ev += check_bus_glitch(sig)
     ev += check_pinned(sig, prof)
     ev += check_stall(sig)
@@ -474,4 +541,4 @@ def run_parquet_checks(sig: EpisodeSignals, prof: RobotProfile, action, state, f
 
 __all__ = ["THRESHOLDS", "Event", "RobotProfile", "EpisodeSignals", "build_profile", "episode_signals",
            "image_energy", "chain_motion", "check_camera_lag", "check_stale_camera",
-           "check_video_integrity", "run_parquet_checks", "grasp_attempts"]
+           "check_video_integrity", "run_parquet_checks", "grasp_attempts", "check_integrity", "FATAL"]

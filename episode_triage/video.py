@@ -32,36 +32,39 @@ def _open(path: str, retries: int = 4):
     raise AssertionError("unreachable")
 
 
-def decode_gray(path: str | None, from_ts: float, to_ts: float, fps: float,
-                with_pts: bool = False):
-    """Frames whose presentation time falls in [from_ts, to_ts).
+def decode_gray(path: str | None, from_ts: float, to_ts: float, fps: float) -> np.ndarray:
+    """Frames whose presentation time falls in [from_ts, to_ts)."""
+    return decode_many(path, [(from_ts, to_ts)], fps)[0]
 
-    v3.0 datasets pack many episodes into one MP4, so this seeks to the episode start.
-    LeRobot encodes with a GOP of 2, so the seek lands at most one frame early.
+
+def decode_many(path: str | None, spans: list[tuple[float, float]], fps: float) -> list[np.ndarray]:
+    """Several episodes' frames from one MP4, opening it once.
+
+    v3.0 datasets pack many episodes into one MP4, so this seeks to each episode's start.
+    LeRobot encodes with a GOP of 2, so a seek lands at most a frame or two early. Over
+    HTTP the seek becomes a range request, so only the episode's bytes are fetched.
     """
     if path is None:
         raise VideoError("no video file for this episode")
     half = 0.5 / fps
-    out, pts = [], []
+    results = []
     try:
         with _open(path) as c:
             s = c.streams.video[0]
             s.thread_type = "AUTO"
             tb = s.time_base
-            if from_ts > 0:
+            for from_ts, to_ts in spans:
                 c.seek(int(max(from_ts - 1.0, 0) / tb), stream=s, backward=True)
-            for fr in c.decode(s):
-                t = float(fr.pts * tb)
-                if t < from_ts - half:
-                    continue
-                if t >= to_ts - half:
-                    break
-                out.append(fr.reformat(width=W, height=H, format="gray",
-                                       interpolation="AREA").to_ndarray())
-                pts.append(t)
+                out = []
+                for fr in c.decode(s):
+                    t = float(fr.pts * tb)
+                    if t < from_ts - half:
+                        continue
+                    if t >= to_ts - half:
+                        break
+                    out.append(fr.reformat(width=W, height=H, format="gray",
+                                           interpolation="AREA").to_ndarray())
+                results.append(np.stack(out) if out else np.zeros((0, H, W), np.uint8))
     except av.error.FFmpegError as e:
         raise VideoError(str(e)) from e
-    frames = np.stack(out) if out else np.zeros((0, H, W), np.uint8)
-    if with_pts:
-        return frames, np.asarray(pts)
-    return frames
+    return results
