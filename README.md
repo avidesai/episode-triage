@@ -20,6 +20,28 @@ before a person opens anything.
 ## What it found
 
 <!-- FINDING:start -->
+Pointed at the LeRobot community dataset: 1,427 SO 100 and SO 101 arms, 48,208 episodes, 241.4 hours.
+
+- **The clock says nothing.** All 48,208 of 48,208 episodes have timestamps exactly equal to `frame_index / fps`, so any check on the timestamp column passes by construction.
+- **Cameras freeze while the arm moves.** In a seeded sample of 809 episodes from 298 robots with every camera checked, 58 episodes on 43 robots had at least one camera stop updating for 3 frames or more while the joints it sees were moving (90 runs, 385 frames, median run 3 frames). Every one of those episodes has a perfect timestamp column. I predicted at least 1 in 10 beforehand; it was 1 in 14.
+- **My prediction about stalls was wrong.** I wrote down beforehand that at least a quarter of stalls and missed grasp sequences would start with a sensing or actuation fault. It was 4 of 355. In teleoperated data nearly every stall is a person pausing with fresh pictures and joints that track; 322 went to training with every layer checked, and the rest went to a person because a standing fault or a near tie made the call unsafe.
+- **Joint level faults across the fleet.** 197 of 1,427 robots carry at least one actuation ticket: 36 with leader and follower calibrated over different spans, 25 with a joint whose follower doesn't track its leader, 92 with a follower offset at rest, and 34 with impossible one frame jumps (bad bus reads).
+- **Camera lag differs by robot.** Most of 395 camera streams trail their joints by 0 to 2 frames; 46 streams on 40 robots trail by 3 frames (100 ms) or more, up to 5. 4 streams estimate the camera ahead of the joints, which most likely means the estimate is wrong there.
+
+Top sensing and actuation fingerprints by priority across all robots (task fingerprints need the cameras checked, so they're ranked on the video sample in the report):
+
+| fingerprint | rung | robots | episodes |
+|---|---|---|---|
+| `actuation.rest_offset.wrist_flex` | 2 | 49 | 329 |
+| `actuation.not_following.wrist_roll` | 2 | 65 | 153 |
+| `actuation.not_tracking.wrist_roll` | 2 | 21 | 386 |
+| `actuation.gain_mismatch.wrist_flex` | 2 | 20 | 396 |
+| `actuation.rest_offset.elbow_flex` | 2 | 22 | 220 |
+| `sensing.stale_state.joint_stream` | 1 | 90 | 303 |
+| `actuation.pinned.wrist_flex` | 2 | 31 | 95 |
+| `actuation.not_following.wrist_flex` | 4 | 31 | 128 |
+
+Every number here is computed by `episode_triage/ledger.py` from `results/`, and the same numbers are in `docs/data.json`.
 <!-- FINDING:end -->
 
 ## What it does
@@ -35,7 +57,8 @@ For each episode:
 3. **Actuation.** A follower joint that left its command and stayed away (stalled, sagging,
    lagging, or held off with nothing moving), a follower that sits offset from its leader at
    rest, leader and follower calibrated over different spans, one frame jumps no real joint
-   can make (bad bus reads), and a joint pinned at its limit while pushed further.
+   can make (bad bus reads), a leader reading that wraps past +-180 degrees and sends the
+   follower the long way round, and a joint pinned at its limit while pushed further.
 4. **Task.** Stalls (nothing commanded and nothing moving for 2 s) and missed grasps, using
    the definition of a missed grasp sequence as 2 or more consecutive missed grasps.
 5. **What started it.** Stalls, missed grasp sequences and tracking losses are anchors. For
@@ -94,6 +117,28 @@ camera from going to training as a policy failure.
 ## Validation
 
 <!-- VALIDATION:start -->
+Faults injected into real community episodes with a known answer. Video faults were reencoded with LeRobot's default encoder settings so they reach the detector through real compression.
+
+One threshold was tuned on data: the stale camera image change level, set to 0.51 gray levels on 20 calibration robots (740 injected frozen frames against 3,173 moving frames: 99% of frozen frames below it, 7.7% of moving frames below it, and the moving frames include natural freezes, so that second number is an upper bound). Then every threshold was frozen and the faults below were scored on different robots.
+
+| injected fault | n | caught | low confidence | missed | abstained | right rung | other new events |
+|---|---|---|---|---|---|---|---|
+| camera frozen 10 frames | 40 | 16 | 24 | 0 | 0 | 14 | 0 |
+| camera frozen 20 frames | 40 | 16 | 24 | 0 | 0 | 14 | 0 |
+| camera frozen 3 frames | 40 | 16 | 22 | 2 | 0 | 14 | 0 |
+| camera frozen 6 frames | 40 | 17 | 23 | 0 | 0 | 16 | 0 |
+| 3 bad reads on one motor | 40 | 40 | 0 | 0 | 0 | 34 | 3 |
+| joint offset 8% of range | 40 | 20 | 0 | 0 | 20 | 20 | 0 |
+| joint stream repeats 6 frames | 37 | 37 | 0 | 0 | 0 | 37 | 2 |
+| joint stalls for 1.5 s | 37 | 37 | 0 | 0 | 0 | 33 | 4 |
+
+**Low confidence** means the detector found the frozen run, but that camera barely shows the arm moving, so the run is logged and the ladder doesn't act on it. That guard is what stopped cameras that can't see the arm from being blamed for stalls in the fleet run, and on these episodes it costs more than half the recall. It is defined as 3 times the stale threshold, so freezing that threshold at 0.51 made the guard stricter too; I didn't retune it on the test robots. **Abstained** means the episode had fewer than two rest periods, so a resting offset can't be measured in it.
+
+Camera delayed by 3 frames: the lag estimate moved by 3 plus or minus 1 on 37 of 38 episodes where both estimates existed (40 tried). Shifts seen: 0: 1, 2: 4, 3: 20, 4: 13.
+
+Raw rows are in `results/inject_eval.json`.
+
+**Bench set on a physical arm:** the recorder and protocol are in `recorder/`; `triage bench-eval` scores it and `triage report` adds it here.
 <!-- VALIDATION:end -->
 
 ## Run it

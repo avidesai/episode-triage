@@ -1,0 +1,6476 @@
+{
+ "findings": {
+  "joints": {
+   "robots": 1427,
+   "robots_failed": 2,
+   "episodes": 48208,
+   "hours": 241.4,
+   "timestamps_synthetic": 48208,
+   "episode_rungs": {
+    "0": 29935,
+    "1": 4931,
+    "2": 1223,
+    "4": 12119
+   },
+   "robots_gain_mismatch": 36,
+   "robots_not_tracking": 25,
+   "robots_rest_offset": 92,
+   "robots_bus_glitch": 34,
+   "robots_not_following": 141,
+   "robots_stale_state": 100,
+   "robots_any_actuation_ticket": 197,
+   "episodes_missed_grasp_sequence": 975,
+   "episodes_stall": 10881
+  },
+  "video": {
+   "robots": 298,
+   "robots_failed": 2,
+   "episodes": 818,
+   "episodes_all_cameras": 809,
+   "episodes_stale_camera": 58,
+   "robots_stale_camera": 43,
+   "stale_runs": 90,
+   "stale_frames": 385,
+   "stale_run_frames_median": 3.0,
+   "stale_episodes_timestamps_synthetic": 58,
+   "stale_by_mount": {
+    "fixed camera": 56,
+    "wrist camera": 34
+   },
+   "anchors": {
+    "training, inputs healthy": 322,
+    "a person: R5": 29,
+    "began with sensing or actuation": 4
+   },
+   "episode_rungs": {
+    "0": 416,
+    "1": 84,
+    "2": 28,
+    "3": 255,
+    "4": 26
+   },
+   "incident_rungs": {
+    "1": 253,
+    "2": 70,
+    "3": 322,
+    "4": 31
+   },
+   "robots_with_lag": 274,
+   "lag_streams": 395,
+   "lag_by_frame": {
+    "-4": 1,
+    "-3": 1,
+    "-1": 1,
+    "0": 80,
+    "1": 150,
+    "2": 106,
+    "3": 38,
+    "4": 14,
+    "5": 4
+   },
+   "camera_streams_lag_ge_3": 46,
+   "robots_lag_ge_3": 40,
+   "lag_max_frames": 5.0,
+   "camera_streams_lag_negative": 4
+  }
+ },
+ "top_fingerprints_fleet": [
+  {
+   "fingerprint": "actuation.rest_offset.wrist_flex",
+   "robots": 49,
+   "episodes": 329,
+   "count": 329,
+   "rung": 2,
+   "recurring": true,
+   "priority": 48363.0,
+   "example": "recalibrate wrist_flex: follower sits +11% of range from its leader in 2 rest periods"
+  },
+  {
+   "fingerprint": "actuation.not_following.wrist_roll",
+   "robots": 65,
+   "episodes": 153,
+   "count": 168,
+   "rung": 2,
+   "recurring": true,
+   "priority": 29835.0,
+   "example": "joint wrist_roll: not following its command (stalled) for 8.4 s at 4.4 s, peak gap 34% of range"
+  },
+  {
+   "fingerprint": "actuation.not_tracking.wrist_roll",
+   "robots": 21,
+   "episodes": 386,
+   "count": 386,
+   "rung": 2,
+   "recurring": true,
+   "priority": 24318.0,
+   "example": "joint wrist_roll: follower doesn't track its leader anywhere in this robot's data (correlation 0.90)"
+  },
+  {
+   "fingerprint": "actuation.gain_mismatch.wrist_flex",
+   "robots": 20,
+   "episodes": 396,
+   "count": 396,
+   "rung": 2,
+   "recurring": true,
+   "priority": 23760.0,
+   "example": "recalibrate wrist_flex: follower moves 0.82 times as far as its leader across the range"
+  },
+  {
+   "fingerprint": "actuation.rest_offset.elbow_flex",
+   "robots": 22,
+   "episodes": 220,
+   "count": 220,
+   "rung": 2,
+   "recurring": true,
+   "priority": 14520.0,
+   "example": "recalibrate elbow_flex: follower sits -20% of range from its leader in 5 rest periods"
+  },
+  {
+   "fingerprint": "sensing.stale_state.joint_stream",
+   "robots": 90,
+   "episodes": 303,
+   "count": 344,
+   "rung": 1,
+   "recurring": true,
+   "priority": 13635.0,
+   "example": "joint state stream froze for 100 ms at 10.8 s and came back"
+  },
+  {
+   "fingerprint": "actuation.pinned.wrist_flex",
+   "robots": 31,
+   "episodes": 95,
+   "count": 103,
+   "rung": 2,
+   "recurring": true,
+   "priority": 8835.0,
+   "example": "joint wrist_flex: pinned at its max for 0.5 s at 11.0 s while commanded further; joint limit or calibration range"
+  },
+  {
+   "fingerprint": "actuation.not_following.wrist_flex",
+   "robots": 31,
+   "episodes": 128,
+   "count": 153,
+   "rung": 4,
+   "recurring": true,
+   "priority": 7936.0,
+   "example": "wrist_flex held 16% of range off its command at 5.8 s with nothing moving: contact with the world or a dead joint, and position alone can't tell which"
+  },
+  {
+   "fingerprint": "actuation.pinned.wrist_roll",
+   "robots": 35,
+   "episodes": 62,
+   "count": 68,
+   "rung": 2,
+   "recurring": true,
+   "priority": 6510.0,
+   "example": "joint wrist_roll: pinned at its min for 1.5 s at 4.5 s while commanded further; joint limit or calibration range"
+  },
+  {
+   "fingerprint": "actuation.gain_mismatch.elbow_flex",
+   "robots": 9,
+   "episodes": 234,
+   "count": 234,
+   "rung": 2,
+   "recurring": true,
+   "priority": 6318.0,
+   "example": "recalibrate elbow_flex: follower moves 0.61 times as far as its leader across the range"
+  }
+ ],
+ "top_fingerprints_video": [
+  {
+   "fingerprint": "task.stall.arm",
+   "robots": 141,
+   "episodes": 266,
+   "count": 309,
+   "rung": 3,
+   "recurring": true,
+   "priority": 75012.0,
+   "example": "training: stall of 2.7 s from 17.5 to 20.2 s with healthy inputs and tracking"
+  },
+  {
+   "fingerprint": "task.missed_grasp.gripper",
+   "robots": 70,
+   "episodes": 99,
+   "count": 171,
+   "rung": 1,
+   "recurring": true,
+   "priority": 3465.0,
+   "example": "one empty close on gripper at 2.1 s, then a good grasp"
+  },
+  {
+   "fingerprint": "task.missed_grasp_sequence.gripper",
+   "robots": 19,
+   "episodes": 27,
+   "count": 43,
+   "rung": 3,
+   "recurring": true,
+   "priority": 1026.0,
+   "example": "training: 2 missed grasps in a row on gripper from 38.8 to 52.1 s with healthy inputs and tracking"
+  },
+  {
+   "fingerprint": "sensing.stale_camera.fixed camera",
+   "robots": 27,
+   "episodes": 35,
+   "count": 46,
+   "rung": 1,
+   "recurring": true,
+   "priority": 472.5,
+   "example": "camera top froze for 167 ms at 2.3 s and came back"
+  },
+  {
+   "fingerprint": "actuation.rest_offset.wrist_flex",
+   "robots": 8,
+   "episodes": 12,
+   "count": 12,
+   "rung": 2,
+   "recurring": true,
+   "priority": 288.0,
+   "example": "recalibrate wrist_flex: follower sits +6% of range from its leader in 2 rest periods"
+  },
+  {
+   "fingerprint": "sensing.stale_camera.wrist camera",
+   "robots": 16,
+   "episodes": 23,
+   "count": 26,
+   "rung": 1,
+   "recurring": true,
+   "priority": 184.0,
+   "example": "camera wrist froze for 100 ms at 6.5 s and came back"
+  },
+  {
+   "fingerprint": "actuation.gain_mismatch.wrist_flex",
+   "robots": 4,
+   "episodes": 11,
+   "count": 11,
+   "rung": 2,
+   "recurring": true,
+   "priority": 132.0,
+   "example": "recalibrate wrist_flex: follower moves 0.85 times as far as its leader across the range"
+  },
+  {
+   "fingerprint": "actuation.not_following.wrist_roll",
+   "robots": 6,
+   "episodes": 6,
+   "count": 6,
+   "rung": 2,
+   "recurring": true,
+   "priority": 108.0,
+   "example": "joint wrist_roll: not following its command (lagging) for 7.7 s at 7.1 s, peak gap 100% of range"
+  }
+ ],
+ "injection": {
+  "faults": {
+   "freeze_10": {
+    "n": 40,
+    "caught": 16,
+    "caught_low_confidence": 24,
+    "missed": 0,
+    "abstained": 0,
+    "right_rung": 14,
+    "other_rungs": {
+     "2": 1,
+     "3": 1
+    },
+    "new_other_events": 0
+   },
+   "freeze_20": {
+    "n": 40,
+    "caught": 16,
+    "caught_low_confidence": 24,
+    "missed": 0,
+    "abstained": 0,
+    "right_rung": 14,
+    "other_rungs": {
+     "2": 1,
+     "3": 1
+    },
+    "new_other_events": 0
+   },
+   "freeze_3": {
+    "n": 40,
+    "caught": 16,
+    "caught_low_confidence": 22,
+    "missed": 2,
+    "abstained": 0,
+    "right_rung": 14,
+    "other_rungs": {
+     "2": 1,
+     "3": 1
+    },
+    "new_other_events": 0
+   },
+   "freeze_6": {
+    "n": 40,
+    "caught": 17,
+    "caught_low_confidence": 23,
+    "missed": 0,
+    "abstained": 0,
+    "right_rung": 16,
+    "other_rungs": {
+     "2": 1
+    },
+    "new_other_events": 0
+   },
+   "glitch": {
+    "n": 40,
+    "caught": 40,
+    "caught_low_confidence": 0,
+    "missed": 0,
+    "abstained": 0,
+    "right_rung": 34,
+    "other_rungs": {
+     "1": 5,
+     "3": 1
+    },
+    "new_other_events": 3
+   },
+   "offset": {
+    "n": 40,
+    "caught": 20,
+    "caught_low_confidence": 0,
+    "missed": 0,
+    "abstained": 20,
+    "right_rung": 20,
+    "other_rungs": {},
+    "new_other_events": 0
+   },
+   "stale_state": {
+    "n": 37,
+    "caught": 37,
+    "caught_low_confidence": 0,
+    "missed": 0,
+    "abstained": 0,
+    "right_rung": 37,
+    "other_rungs": {},
+    "new_other_events": 2
+   },
+   "stall": {
+    "n": 37,
+    "caught": 37,
+    "caught_low_confidence": 0,
+    "missed": 0,
+    "abstained": 0,
+    "right_rung": 33,
+    "other_rungs": {
+     "1": 1,
+     "4": 2,
+     "3": 1
+    },
+    "new_other_events": 4
+   }
+  },
+  "lag": {
+   "n": 40,
+   "estimated": 38,
+   "shift_counts": {
+    "3": 20,
+    "4": 13,
+    "2": 4,
+    "0": 1
+   },
+   "within_1_of_3": 37
+  }
+ },
+ "calibration": {
+  "stale_tau_e": 0.51,
+  "n_frozen_frames": 740,
+  "n_moving_frames": 3173,
+  "tpr_at_tau": 0.9932432432432432,
+  "fpr_at_tau": 0.07721399306649858,
+  "frozen_e_percentiles": [
+   0.0,
+   0.26,
+   0.354,
+   0.501
+  ],
+  "moving_e_percentiles": [
+   0.0,
+   0.104,
+   0.651,
+   2.664
+  ],
+  "robots": [
+   "BranoSandy/so100_test_cap_20",
+   "ahork/so100_test",
+   "Xiewei1211/so100_test1",
+   "apayan/so100_key6",
+   "Odog16/so100_test",
+   "psg777/so100test1",
+   "kantine/flip_A2",
+   "RaulSaya/Bylogic0",
+   "davidgoss/record-test2",
+   "SahilChande/so100_pick",
+   "RaulSaya/so101_test3",
+   "acrampette/so100test_05",
+   "fuka02/so101_test_0723_2",
+   "dopaul/game_v6",
+   "Mohamedal/put_banana_bowl_dis_test2",
+   "GALEOTE/so101_test",
+   "adrienloizeau/pig3_seg",
+   "Mohamedal/put_lemon_bowl_data",
+   "dongseon/so100_0429",
+   "kantine/piling_glasses"
+  ],
+  "note": "moving frames are clean episodes and can hold natural stale frames, so fpr is an upper bound"
+ },
+ "bench": null,
+ "camera_lags": [
+  {
+   "robot_id": "dongseon/so100_062801",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "dongseon/so100_062801",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    0,
+    2
+   ]
+  },
+  {
+   "robot_id": "Mohamedal/put_banana_bowl_dis",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    2,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "jiajun001/eraser01_3",
+   "camera": "observation.images.left_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 4.0,
+   "lags": [
+    4,
+    4
+   ]
+  },
+  {
+   "robot_id": "jiajun001/eraser01_3",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "jiajun001/eraser01_3",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    1,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "sucrammal/plant_pour_data",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "sucrammal/plant_pour_data",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_4_raw_2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_4_raw_2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    3
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_4_raw_2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "ptizzza/so101_pompom1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "ptizzza/so101_pompom1",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    1,
+    3
+   ]
+  },
+  {
+   "robot_id": "GD1221/so101_test",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "hhh6/so101_test8",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "sergiov2000/so100_leader_arm_stack_ball_40",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "sergiov2000/so100_leader_arm_stack_ball_40",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/filtered_pick_yellow",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/filtered_pick_yellow",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    -1,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/filtered_pick_yellow",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "ortiztx/so101_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 15.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "ortiztx/so101_test",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 15.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "Whakamua/so100_mouse",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "DorayakiLin/so100_stack_cube",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "DorayakiLin/so100_stack_cube",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "kkurzweil/so100_wrist_02",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "kkurzweil/so100_wrist_02",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "kaiserbuffle/hanoi_dc",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "kaiserbuffle/hanoi_dc",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_1_1",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_1_1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    2,
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_1_1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    2,
+    4,
+    3
+   ]
+  },
+  {
+   "robot_id": "alan-123456/test_red_final",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    4,
+    1
+   ]
+  },
+  {
+   "robot_id": "alan-123456/test_red_final",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "EverNorif/so101-place-orange",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "EverNorif/so101-place-orange",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    -1,
+    0
+   ]
+  },
+  {
+   "robot_id": "rocach94/so101_data2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    2
+   ]
+  },
+  {
+   "robot_id": "kantine/flip_A1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/new_tic_tac_toe_4_06182025",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/new_tic_tac_toe_4_06182025",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    3,
+    0
+   ]
+  },
+  {
+   "robot_id": "samsitol/so100_PnP",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "LeRobot-worldwide-hackathon/157-Pas_de_bras_Pas_de_Chocolat-Strawberries",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "LeRobot-worldwide-hackathon/157-Pas_de_bras_Pas_de_Chocolat-Strawberries",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "aa-rerun/so100_test",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "shylee/so100_pengripG",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    5,
+    3,
+    2
+   ]
+  },
+  {
+   "robot_id": "shylee/so100_pengripG",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "shylee/so100_pengripG",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    2
+   ]
+  },
+  {
+   "robot_id": "shylee/so100_gauze_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "shylee/so100_gauze_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/so100_test_3_cameras",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/so100_test_3_cameras",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.5,
+   "lags": [
+    3,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/so100_test_3_cameras",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 3.5,
+   "lags": [
+    3,
+    4
+   ]
+  },
+  {
+   "robot_id": "sergiov2000/so100_leader_ball_usability_u2_stack_1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "sergiov2000/so100_leader_ball_usability_u2_stack_1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "jiroh2000/so100_test_001a",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "Cornito/so101_chess3",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "ZHUZHUXIADDD/so100_test1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "ZHUZHUXIADDD/so100_test1",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "Congying1112/so100_place_blue_bottle_with_two_cameras2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "rshoff/so101_test_2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "LeRobot-worldwide-hackathon/364-ET_HOME_SERVICE-cleaning_sat_data",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    1,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "LeRobot-worldwide-hackathon/364-ET_HOME_SERVICE-cleaning_sat_data",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "campa-rabb/so100_test",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "campa-rabb/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "kaiserbuffle/hanoi_the_good_two",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "kaiserbuffle/hanoi_the_good_two",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "ManTang034/so101_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "rbo-corematic/strawberries",
+   "camera": "observation.images.side_2",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "rbo-corematic/strawberries",
+   "camera": "observation.images.side_1",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "Kento2001/so100_test_3",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": -2.0,
+   "lags": [
+    -2
+   ]
+  },
+  {
+   "robot_id": "damienD13/return_filled_cup_to_rest_area_002",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 20.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "damienD13/return_filled_cup_to_rest_area_002",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "damienD13/return_filled_cup_to_rest_area_002",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "s20000s/soarm100_data",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    1,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "s20000s/soarm100_data",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "xiaoweihiat/so101_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "xiaoweihiat/so101_test",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "Hugo-Castaing/LAR_DEMO",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "sergiov2000/so100_leader_arm_pick_ball_40",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    4
+   ]
+  },
+  {
+   "robot_id": "sergiov2000/so100_leader_arm_pick_ball_40",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    3
+   ]
+  },
+  {
+   "robot_id": "siqiLi/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.5,
+   "lags": [
+    2,
+    3
+   ]
+  },
+  {
+   "robot_id": "siqiLi/so100_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 4.0,
+   "lags": [
+    2,
+    5,
+    4
+   ]
+  },
+  {
+   "robot_id": "Ryosei2/0704_donut2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "Ryosei2/0704_donut2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 5.0,
+   "lags": [
+    6,
+    4
+   ]
+  },
+  {
+   "robot_id": "hrhraj/groundingdino_dice_demos",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "hrhraj/groundingdino_dice_demos",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "roboflavia/pen_dual1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "roboflavia/pen_dual1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/so100_test_6",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/so100_test_6",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "samanthalhy/so100_test_2",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "samanthalhy/so100_test_2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/pick_pink_1",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/pick_pink_1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/pick_pink_1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_480_489",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "TzuShian/so100_chess_test2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "TzuShian/so100_chess_test2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 0.0,
+   "lags": [
+    0
+   ]
+  },
+  {
+   "robot_id": "mfyu/so101_white_box_green_nums_20_0729",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 0.0,
+   "lags": [
+    0
+   ]
+  },
+  {
+   "robot_id": "wu12581/so100_test_dtp",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.5,
+   "lags": [
+    3,
+    2
+   ]
+  },
+  {
+   "robot_id": "psg777/newone4",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "psg777/newone4",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 0.0,
+   "lags": [
+    0
+   ]
+  },
+  {
+   "robot_id": "kantine/piling_glasses",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "kantine/piling_glasses",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "danielkorth/green-marker",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "danielkorth/green-marker",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "lirislab/lemon_into_bowl",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "lirislab/lemon_into_bowl",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "gxy1111/so100_rotate",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "gxy1111/so100_rotate",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "chirag1701/record-test_green",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "chirag1701/record-test_green",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "andlyu/newiii_salad_val",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "andlyu/newiii_salad_val",
+   "camera": "observation.images.side_1",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "andlyu/newiii_salad_val",
+   "camera": "observation.images.side_2",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "andlyu/newiii_salad_val",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "Rorschach4153/so101_30_1",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "Rorschach4153/so101_30_1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "Rorschach4153/so101_30_1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "andaba/so100_draw_curves_0",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_grid_8",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_grid_8",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    2,
+    4
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_grid_8",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 4.0,
+   "lags": [
+    4,
+    2,
+    4
+   ]
+  },
+  {
+   "robot_id": "sattgle/record-test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "sattgle/record-test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "chirag1701/record-test_red",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "ps5387/grab_bottle2",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "ps5387/grab_bottle2",
+   "camera": "observation.images.rear_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "mercu7/so101_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "mercu7/so101_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "ecoqba/so100_test1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 4.0,
+   "lags": [
+    4,
+    4
+   ]
+  },
+  {
+   "robot_id": "labme/so101_multicameras",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "burgalon/so100_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_280_289",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_280_289",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_5_raw_2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_5_raw_2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_5_raw_2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 4.0,
+   "lags": [
+    5,
+    3
+   ]
+  },
+  {
+   "robot_id": "pbvr/so101_test003",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "pbvr/so101_test003",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    3,
+    1
+   ]
+  },
+  {
+   "robot_id": "pbvr/so101_test003",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    3,
+    1
+   ]
+  },
+  {
+   "robot_id": "Mwuqiu/so100_pointit_0422",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "Mwuqiu/so100_pointit_0422",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "easonjcc/so100_test-04",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "Mohamedal/put_banana_bowl_new_data",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    1,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "Mohamedal/put_banana_bowl_new_data",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "masato-ka/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "kaiserbuffle/so101_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "BranoSandy/so100_test_1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    2
+   ]
+  },
+  {
+   "robot_id": "BranoSandy/so100_test_1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "un1c0rnio/so101_test2",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "un1c0rnio/so101_test2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_9_raw_2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_9_raw_2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_9_raw_2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    4,
+    2,
+    3
+   ]
+  },
+  {
+   "robot_id": "ryanpennings/so100_pegcrate_c2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    3
+   ]
+  },
+  {
+   "robot_id": "ryanpennings/so100_pegcrate_c2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "sandhyavs/lego-pickup-clean-100",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "sandhyavs/lego-pickup-clean-100",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "danielkorth/bike-light4am-part2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "danielkorth/bike-light4am-part2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "duthvik/sputnik_100_71_creative_tasks",
+   "camera": "observation.images.rear_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3,
+    4
+   ]
+  },
+  {
+   "robot_id": "duthvik/sputnik_100_71_creative_tasks",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "duthvik/sputnik_100_71_creative_tasks",
+   "camera": "observation.images.left_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    2,
+    3,
+    4
+   ]
+  },
+  {
+   "robot_id": "fljjoin/so100_test1004",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "sergeytata/hackathon-task10",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3,
+    0
+   ]
+  },
+  {
+   "robot_id": "sergeytata/hackathon-task10",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "lirislab/stack_two_red_cubes",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "lirislab/stack_two_red_cubes",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/so100_test_yellow_cuboid_4",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    3,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/so100_test_yellow_cuboid_4",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "GALEOTE/so101_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 0.0,
+   "lags": [
+    0
+   ]
+  },
+  {
+   "robot_id": "baptiste-04/so100_test_v6",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    2,
+    3
+   ]
+  },
+  {
+   "robot_id": "baptiste-04/so100_test_v6",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "zlj666/so101_test2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "zlj666/so101_test2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "triton7777/cube_to_bowl_so100",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "triton7777/cube_to_bowl_so100",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/so100_test_pick_green_5",
+   "camera": "observation.images.right_side_2",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/so100_test_pick_green_5",
+   "camera": "observation.images.right_side_1",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/pick_yellow_1",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/pick_yellow_1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/pick_yellow_1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    1,
+    3
+   ]
+  },
+  {
+   "robot_id": "danaaubakirova/so100_task_3",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3,
+    2
+   ]
+  },
+  {
+   "robot_id": "sshh11/so100_orange_50ep_1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "senjougi/so100_test3",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "xhaka3456/so100_test_0510",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "xhaka3456/so100_test_0510",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    1,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "kyomangold/so100_ttt_B3_v2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "bjb7/so101_pen_touch_test_2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    -1,
+    2
+   ]
+  },
+  {
+   "robot_id": "bjb7/so101_pen_touch_test_2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    2,
+    3
+   ]
+  },
+  {
+   "robot_id": "idreesrazak/so100_test_trial",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "un1c0rnio/so101_test4",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "un1c0rnio/so101_test4",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.5,
+   "lags": [
+    2,
+    3
+   ]
+  },
+  {
+   "robot_id": "emmanuel-v/so101_test_02",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "Ayush-Sharan-1/c-4g_tC-T_fC-T_d-280525_v-1",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "love3165303/so100_pick3",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "love3165303/so100_pick3",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "ganker5/so100_dataline_20250331",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "Odog16/so100_test_2.1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    3,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "Odog16/so100_test_2.1",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    0,
+    2
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_320_329",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_320_329",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "Kento2001/so100_test_",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "meetrais/ball_in_the_box",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    -1,
+    1
+   ]
+  },
+  {
+   "robot_id": "meetrais/ball_in_the_box",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    1,
+    5,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/new_tic_tac_toe_4",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/new_tic_tac_toe_4",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/new_tic_tac_toe_4",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    0,
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "Xiewei1211/so100_test1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "Xiewei1211/so100_test1",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "budinggou/so100_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.5,
+   "lags": [
+    3,
+    2
+   ]
+  },
+  {
+   "robot_id": "budinggou/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "LeRobot-worldwide-hackathon/246-Golf",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "LeRobot-worldwide-hackathon/246-Golf",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "andlyu/newiii_salad_cc",
+   "camera": "observation.images.wrist_2",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "andlyu/newiii_salad_cc",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "andlyu/newiii_salad_cc",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "andlyu/newiii_salad_cc",
+   "camera": "observation.images.wrist_1",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 0.0,
+   "lags": [
+    0
+   ]
+  },
+  {
+   "robot_id": "jiroh2000/so100_test_003",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "jccj/shape_matching_u",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "jccj/shape_matching_u",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_grid_6_raw_4",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_grid_6_raw_4",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_grid_6_raw_4",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "Ninkofu/sushi_put",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "Ninkofu/sushi_put",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 0.0,
+   "lags": [
+    0
+   ]
+  },
+  {
+   "robot_id": "jiuyal2/so100_marker_new_camera_pose_new_red",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    3,
+    2
+   ]
+  },
+  {
+   "robot_id": "jiuyal2/so100_marker_new_camera_pose_new_red",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 4.0,
+   "lags": [
+    4,
+    2,
+    4
+   ]
+  },
+  {
+   "robot_id": "rocach94/so101_Test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "rocach94/so101_Test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    2
+   ]
+  },
+  {
+   "robot_id": "bjb7/so101_pen_mug_10_13",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "bjb7/so101_pen_mug_10_13",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "LemonadeDai/so100_coca",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "LemonadeDai/so100_coca",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "rocach94/so101_bin_and_wheel_is_changing_dynamically",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "rocach94/so101_bin_and_wheel_is_changing_dynamically",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "bjb7/so101_pen_mug_10_14",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    0,
+    2
+   ]
+  },
+  {
+   "robot_id": "bjb7/so101_pen_mug_10_14",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "juni3227/so100_test_cap02_sideway",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "gribok201/150episodes6",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "gribok201/150episodes6",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": -0.5,
+   "lags": [
+    0,
+    -1
+   ]
+  },
+  {
+   "robot_id": "xnny/so100_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "xnny/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "hrhraj/so100_dice_red_v2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 0.0,
+   "lags": [
+    0
+   ]
+  },
+  {
+   "robot_id": "ahad-j/chess-c5-to-b6",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3,
+    4
+   ]
+  },
+  {
+   "robot_id": "Mohamedal/put_banana_bowl_dis_test2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "Mohamedal/put_banana_bowl_dis_test2",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_grid_combined_2_4_6_7",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_grid_combined_2_4_6_7",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_grid_combined_2_4_6_7",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    1,
+    3
+   ]
+  },
+  {
+   "robot_id": "ReubenLim/lerobot_hackathon",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "ahork/record-test-02",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "ahork/so100_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "AkibaGeek/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "AkibaGeek/so100_test",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "marmau2/record_pick01",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "sergiov2000/temp_test_red_2ep",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "sergiov2000/temp_test_red_2ep",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "Ryosei2/0617_green30",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "Ryosei2/0617_green30",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 4.0,
+   "lags": [
+    4,
+    4,
+    4
+   ]
+  },
+  {
+   "robot_id": "Ryosei2/0617_green30",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "asafxrev/so100_jenga_box_may28_2cam_bg",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "asafxrev/so100_jenga_box_may28_2cam_bg",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    2,
+    3
+   ]
+  },
+  {
+   "robot_id": "bjb7/so101_pen_mug_10_7",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "bjb7/so101_pen_mug_10_7",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "356c/so100_duck_reposition_1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "356c/so100_duck_reposition_1",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "356c/so100_duck_reposition_1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "MarkusWuenstel/distinguish-pens",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "MarkusWuenstel/distinguish-pens",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "MarkusWuenstel/distinguish-pens",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "psg777/so100test1",
+   "camera": "observation.images.side_1",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "psg777/so100test1",
+   "camera": "observation.images.side_2",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "psg777/so100test1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_290_299",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_290_299",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "samsitol/so100_PnP01",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    -1,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "samsitol/so100_PnP01",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "davidgoss/record-test2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "davidgoss/record-test2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "LeRobot-worldwide-hackathon/162-Les_traboules-record_draw_lerobot",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    0,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "LeRobot-worldwide-hackathon/162-Les_traboules-record_draw_lerobot",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "yuk6ra/so101-onetape-cleanup",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "yuk6ra/so101-onetape-cleanup",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "pierfabre/cow2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "pierfabre/cow2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_450_459",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_450_459",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "szfforever/so101_sec",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "szfforever/so101_sec",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "wefio/so101_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "lirislab/sweep_tissue_cube",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    1,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "ryanpennings/so100_pegcrate_d1b",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "ryanpennings/so100_pegcrate_d1b",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    1,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "ryanpennings/so100_pegcrate_d1b",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 5.0,
+   "lags": [
+    5,
+    5,
+    3
+   ]
+  },
+  {
+   "robot_id": "jchun/so100_cleaning_20250525_154019",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "jiroh2000/so100_test_007",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "jiroh2000/so100_test_007",
+   "camera": "observation.images.bottom",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "jiroh2000/so100_test_02",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "jiroh2000/so100_test_02",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "jiajun001/eraser00_3",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "jiajun001/eraser00_3",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "jiajun001/eraser00_3",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "Hugo-Castaing/so101_test",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "luriss/so100_pick_and_place_box_task_0430_1",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "sincostangerines/stack_cubes_100",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "sincostangerines/stack_cubes_100",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "jiuyal2/so100_marker",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "jiuyal2/so100_marker",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 4.0,
+   "lags": [
+    4,
+    4
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/so100_test_5",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "SGQA/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/so100_test_yellow_cuboid_1",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/so100_test_yellow_cuboid_1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.5,
+   "lags": [
+    2,
+    3
+   ]
+  },
+  {
+   "robot_id": "UCleQmAR/so101_gasp_mesuring_tape",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "UCleQmAR/so101_gasp_mesuring_tape",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "kyomangold/so100_ttt_A2",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 4.0,
+   "lags": [
+    4
+   ]
+  },
+  {
+   "robot_id": "Mwuqiu/pickup_ducks",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "Mwuqiu/pickup_ducks",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "Jinheng0130/Catch",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "Jinheng0130/Catch",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_110_119",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_110_119",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "CrawlAiHuggingFace/multiplied_so101_first",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    1
+   ]
+  },
+  {
+   "robot_id": "CrawlAiHuggingFace/multiplied_so101_first",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "00ri/so100_battery",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    3,
+    0
+   ]
+  },
+  {
+   "robot_id": "00ri/so100_battery",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    3
+   ]
+  },
+  {
+   "robot_id": "samsitol/so100_PnPacorn",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    1,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "samsitol/so100_PnPacorn",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    2,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "samsitol/so100_PnPacorn",
+   "camera": "observation.images.wrist_1",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "samsitol/so100_PnPacorn",
+   "camera": "observation.images.wrist_2",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "ptizzza/so101_pompom_orange",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    1,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "HarrisonLee24/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.5,
+   "lags": [
+    3,
+    2
+   ]
+  },
+  {
+   "robot_id": "hawnsoung/so101_test_coff_3",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_370_379",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": -4.0,
+   "lags": [
+    -4,
+    0,
+    -4
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_370_379",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "Ayush-Sharan-1/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_1_2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_1_2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 5.0,
+   "lags": [
+    5,
+    2,
+    6
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_1_2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    0,
+    3
+   ]
+  },
+  {
+   "robot_id": "UCleQmAR/so101_data_right_long10",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "UCleQmAR/so101_data_right_long10",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    2
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_380_389",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_380_389",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "hrhraj/groundingdino_dice_demos_08",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "hrhraj/groundingdino_dice_demos_08",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 0.0,
+   "lags": [
+    0
+   ]
+  },
+  {
+   "robot_id": "Metabolik/so101_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "apayan/so100_dice4",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 20.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "apayan/so100_dice4",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "apayan/so100_dice4",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 20.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "emmanuel-v/so101_test_03",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_140_149",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_140_149",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "hawnsoung/so101_test_coff_5",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    2,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "lt-s/rsj2025_train_resolve_any_anomalies_and_move_all_blocks_to_matching_dishes",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 60.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    1,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "LeRobot-worldwide-hackathon/141-Electrify-insertbattery",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "Kento2001/so100_test7",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.5,
+   "lags": [
+    2,
+    3
+   ]
+  },
+  {
+   "robot_id": "masato-ka/so100_separate_blue_green_blocks_v2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    3,
+    2
+   ]
+  },
+  {
+   "robot_id": "luriss/so100_pick_and_place_box_task_0428",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "luriss/so100_pick_and_place_box_task_0428",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": -1.0,
+   "lags": [
+    -1
+   ]
+  },
+  {
+   "robot_id": "maitereo/so100_bag_placement_20250426",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "danaaubakirova/svla_so100_task4_v3_clean",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "DorayakiLin/so100_pick_cube_in_box",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 3.5,
+   "lags": [
+    4,
+    3
+   ]
+  },
+  {
+   "robot_id": "DorayakiLin/so100_pick_cube_in_box",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    6,
+    3,
+    0
+   ]
+  },
+  {
+   "robot_id": "easonjcc/so100_test-05",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "easonjcc/so100_test-05",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "easonjcc/so100_test-05",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "luke250305/play_dice_250311.1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    3,
+    2
+   ]
+  },
+  {
+   "robot_id": "luke250305/play_dice_250311.1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 4.0,
+   "lags": [
+    3,
+    5
+   ]
+  },
+  {
+   "robot_id": "yyiiii/so101_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "Mwuqiu/Pick_up_the_Yellow_Duck_Precise",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "pierfabre/pig3",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "pierfabre/pig3",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "TzuShian/so100_250527",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 0.0,
+   "lags": [
+    0
+   ]
+  },
+  {
+   "robot_id": "psg777/glue3",
+   "camera": "observation.images.side_2",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "Maski211123/so100_test0",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.5,
+   "lags": [
+    2,
+    3
+   ]
+  },
+  {
+   "robot_id": "Maski211123/so100_test0",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "yuk6ra/so101-cube-2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "yuk6ra/so101-cube-2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "rfruit/so100_building_house_3",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "rfruit/so100_building_house_3",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 7.0,
+   "lags": [
+    7
+   ]
+  },
+  {
+   "robot_id": "Ayush-Sharan-1/so100_ticTacToe_v2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "Ayush-Sharan-1/so100_ticTacToe_v2",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 4.5,
+   "lags": [
+    5,
+    4
+   ]
+  },
+  {
+   "robot_id": "chirag1701/new0_green_block_more",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    2,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "chirag1701/new0_green_block_more",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "slowturtle99/so100_pick_place",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    -3,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "EverNorif/so101-table-cleanup",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    1,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "EverNorif/so101-table-cleanup",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": -1.0,
+   "lags": [
+    0,
+    -1,
+    -1
+   ]
+  },
+  {
+   "robot_id": "zijianaaaa/so100_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "zijianaaaa/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "pietroom/holdthis",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "pietroom/holdthis",
+   "camera": "observation.images.phone",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 4.0,
+   "lags": [
+    3,
+    4,
+    4
+   ]
+  },
+  {
+   "robot_id": "hoon-shin/so100_basketball",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "Odog16/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "ganker5/so100_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    1,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "ganker5/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "Zufayri/fayri2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "psg777/redtape2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    2,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "psg777/redtape2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "reedscot/so100_test4",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "nicholasluschaeffler/dataset50_1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "nicholasluschaeffler/dataset50_1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "drjaisree25/carrot_data",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "sincostangerines/stack_cubes_50",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "sincostangerines/stack_cubes_50",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_360_369",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": -3.5,
+   "lags": [
+    -6,
+    -1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_360_369",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "alan-123456/test3",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "alan-123456/test3",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "acrampette/third_arm_02",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "Tear4Pixelation/lego2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    1,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "Tear4Pixelation/lego2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 0.0,
+   "lags": [
+    0
+   ]
+  },
+  {
+   "robot_id": "pietroom/actualeasytask",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    1,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "pietroom/actualeasytask",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    1,
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "maujim/so100bagelps4",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "maujim/so100bagelps4",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "Bapt120/so101_cup1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "bjb7/so101_pen_mug_10_2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "bjb7/so101_pen_mug_10_2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    -4,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "lt-s/rsj2025_train_relocate_any_misplaced_blocks_to_their_matching_dishes",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 60.0,
+   "n": 1,
+   "median_lag": -1.0,
+   "lags": [
+    -1
+   ]
+  },
+  {
+   "robot_id": "arulloomba/so100_test_20250424_214343",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "yyiiii/so101_test1",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_200_209",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 5.0,
+   "lags": [
+    5
+   ]
+  },
+  {
+   "robot_id": "edgarkim/so100_test_edgar_2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "kyomangold/so100_ttt_C2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "fil1021/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 25.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "fil1021/so100_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 25.0,
+   "n": 1,
+   "median_lag": 1.0,
+   "lags": [
+    1
+   ]
+  },
+  {
+   "robot_id": "hhh6/so101_test5",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_grid_6_raw_2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_grid_6_raw_2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "DanqingZ/tic_tac_toe_grid_6_raw_2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    4,
+    3
+   ]
+  },
+  {
+   "robot_id": "ZHANGXD90/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "ZHANGXD90/so100_test",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "lt-s/rsj2025_train_move_six_blocks_tray_to_matching_dishes_flip",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 60.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "SharkDan/so100_test_f2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "SharkDan/so100_test_f2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "SharkDan/so100_test_f2",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "duthvik/sputnik_100_65_kitchen_tasks",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 4.0,
+   "lags": [
+    4,
+    4,
+    3
+   ]
+  },
+  {
+   "robot_id": "duthvik/sputnik_100_65_kitchen_tasks",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "duthvik/sputnik_100_65_kitchen_tasks",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 3.0,
+   "lags": [
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "Trelis/SO-101-ACT-n10",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "Trelis/SO-101-ACT-n10",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    1,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "magnusk/so100_blocktest",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "magnusk/so100_blocktest",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "shylee/so100_2camRubber",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    1,
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "shylee/so100_2camRubber",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_300_309",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_300_309",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "luo99999999/so101",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "sunq/so101_test",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    -1,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "sunq/so101_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": -1.0,
+   "lags": [
+    -1
+   ]
+  },
+  {
+   "robot_id": "edgarkim/so100_test",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "edgarkim/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "slowturtle99/so100_pick_place_blocks",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "slowturtle99/so100_pick_place_blocks",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "DoggyDoggyWhatNow/so101_squirtle",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    2
+   ]
+  },
+  {
+   "robot_id": "tenkau/so101_color_block",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "Kunalmod/so101_test_7",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "Kunalmod/so101_test_7",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "isadev/bougies2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    3,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "isadev/bougies2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": -2.0,
+   "lags": [
+    -2
+   ]
+  },
+  {
+   "robot_id": "Tank-123/so101_testdata_0820",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    0,
+    2,
+    1
+   ]
+  },
+  {
+   "robot_id": "lt-s/so100_train_move_two_blocks_tray_to_matching_dishes_flip",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "RickRain/so101_test",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "RickRain/so101_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "sincostangerines/stack_cubes_40",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "sincostangerines/stack_cubes_40",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "dsfsg/bring_bottle",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 0.0,
+   "lags": [
+    0
+   ]
+  },
+  {
+   "robot_id": "DorayakiLin/so100_test",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 2.5,
+   "lags": [
+    2,
+    3
+   ]
+  },
+  {
+   "robot_id": "DorayakiLin/so100_test",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "jiajun001/put13-2",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "jiajun001/put13-2",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "jiajun001/put13-2",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  },
+  {
+   "robot_id": "lqzjbs/data_testssss6",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    1,
+    3
+   ]
+  },
+  {
+   "robot_id": "lqzjbs/data_testssss6",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 3.0,
+   "lags": [
+    2,
+    3,
+    3
+   ]
+  },
+  {
+   "robot_id": "MostafaOthman/pickplace_sweetsjp_straw",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 0.0,
+   "lags": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "robot_id": "MostafaOthman/pickplace_sweetsjp_straw",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    0,
+    1
+   ]
+  },
+  {
+   "robot_id": "PearlWhite/so101_boll",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 3.0,
+   "lags": [
+    3
+   ]
+  },
+  {
+   "robot_id": "LeRobot-worldwide-hackathon/189-GMI-AI-GMISET1",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.0,
+   "lags": [
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "Ayush-Sharan-1/so100_ticTacToe_v3",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "Ayush-Sharan-1/so100_ticTacToe_v3",
+   "camera": "observation.images.front_side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 3.5,
+   "lags": [
+    4,
+    3
+   ]
+  },
+  {
+   "robot_id": "sergiov2000/test_green_10_episodes",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    2,
+    0
+   ]
+  },
+  {
+   "robot_id": "sergiov2000/test_green_10_episodes",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 1.5,
+   "lags": [
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "MarkusWuenstel/tape-two-cameras",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 2,
+   "median_lag": 0.5,
+   "lags": [
+    1,
+    0
+   ]
+  },
+  {
+   "robot_id": "MarkusWuenstel/tape-two-cameras",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    0,
+    2
+   ]
+  },
+  {
+   "robot_id": "MarkusWuenstel/tape-two-cameras",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_330_339",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_010_019",
+   "camera": "observation.images.wrist",
+   "mount": "wrist camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 2.0,
+   "lags": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "robot_id": "shuohsuan/grasp_data_010_019",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 5.0,
+   "lags": [
+    5
+   ]
+  },
+  {
+   "robot_id": "Mohamedal/so100_put_cube_bowl_newda",
+   "camera": "observation.images.side",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 3,
+   "median_lag": 1.0,
+   "lags": [
+    1,
+    1,
+    2
+   ]
+  },
+  {
+   "robot_id": "Mohamedal/so100_put_cube_bowl_newda",
+   "camera": "observation.images.top",
+   "mount": "fixed camera",
+   "fps": 30.0,
+   "n": 1,
+   "median_lag": 2.0,
+   "lags": [
+    2
+   ]
+  }
+ ],
+ "dataset": {
+  "repo": "lerobot/community_dataset_v3",
+  "revision": "ab92ac3fa4d0c08336e21b8e51cb9dc279535539"
+ }
+}
