@@ -143,8 +143,22 @@ def triage(events: list[Event], cov: Coverage) -> list[Incident]:
                                           f"{e.check.split('.')[-1]} ({_ev(e)})", e))
 
     explained, rest = explain([e for e in events if e not in integrity])
+    by_cause: dict[tuple[str, str], Incident] = {}
     for x in explained:
-        incidents.append(_anchor_incident(x, events, cov))
+        inc = _anchor_incident(x, events, cov)
+        incidents.append(inc)
+        if inc.cause is not None:
+            by_cause.setdefault((inc.cause.check, inc.cause.component), inc)
+    # Repeats of a fault that already explains an anchor belong to that incident; they are
+    # the same camera or the same motor, and counting them again would double the ticket.
+    keep = []
+    for e in rest:
+        owner = by_cause.get((e.check, e.component))
+        if owner is not None and e.check in ("sensing.stale_camera", "sensing.stale_state", "actuation.bus_glitch"):
+            owner.related.append(e)
+        else:
+            keep.append(e)
+    rest = keep
 
     stale_done: set[tuple[str, str]] = set()
     glitch_done: set[str] = set()
