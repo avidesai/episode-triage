@@ -18,6 +18,7 @@ import numpy as np
 
 from .pipeline import profile_for, triage_episode
 from .readers import RobotData, open_robot
+from .signals import image_energy
 from .video import VideoError, decode_many
 
 COMMUNITY = ("lerobot/community_dataset_v3", "ab92ac3fa4d0c08336e21b8e51cb9dc279535539")
@@ -113,31 +114,58 @@ def load_video_frames(robot: RobotData, episodes: list[int]) -> dict[int, dict[s
     return frames
 
 
-def run_video_sample(d: Path, episodes: list[int], keep_traces: bool = False) -> dict:
+def fetch_energies(d: Path, episodes: list[int], cache_dir: Path) -> dict:
+    """Decode the sampled episodes' video once and keep only each camera's image change
+    trace. That trace is all the video checks need, and it is small enough to commit."""
+    f = cache_dir / (robot_id(d).replace("/", "__") + ".npz")
+    if f.exists():
+        return _read_energies(f)
+    robot = open_robot(d, robot_id=robot_id(d), remote=COMMUNITY)
+    frames = load_video_frames(robot, episodes)
+    store = {}
+    for i, cams in frames.items():
+        for key, v in cams.items():
+            if isinstance(v, np.ndarray):
+                store[f"{i}|{key}|E"] = image_energy(v).astype(np.float32)
+                store[f"{i}|{key}|n"] = np.array([len(v)])
+            else:
+                store[f"{i}|{key}|err"] = np.array([v])
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(f, **store)
+    return _read_energies(f)
+
+
+def _read_energies(f: Path) -> dict:
+    out: dict[int, dict] = defaultdict(dict)
+    with np.load(f, allow_pickle=False) as z:
+        for k in z.files:
+            i, key, kind = k.split("|")
+            if kind == "E":
+                out[int(i)][key] = (z[k].astype(np.float64), int(z[f"{i}|{key}|n"][0]))
+            elif kind == "err":
+                out[int(i)][key] = str(z[k][0])
+    return out
+
+
+def run_video_sample(d: Path, episodes: list[int], cache_dir: Path) -> dict:
     try:
-        robot = open_robot(d, robot_id=robot_id(d), remote=COMMUNITY)
-        prof = profile_for(robot)
-        frames = load_video_frames(robot, episodes)
-        eps = []
-        traces = {}
-        for i in episodes:
-            ep = robot.episode(i)
-            ok = {k: v for k, v in frames[i].items() if isinstance(v, np.ndarray)}
-            for k, v in frames[i].items():
-                if not isinstance(v, np.ndarray):
-                    ep.cameras[k].path = None   # forces a recorded decode error for this camera
-            r = triage_episode(ep, prof, video=True, frames_override=ok, keep_traces=keep_traces)
-            eps.append(_summary(r))
-            if keep_traces:
-                traces[i] = r.traces
-        res = {"robot_id": robot.robot_id, "robot_type": robot.robot_type, "fps": robot.fps,
-               "codec": robot.video_codec, "lag": prof.lag.tolist(), "episodes": eps}
-        if keep_traces:
-            res["_traces"] = traces
-        return res
+        energies = fetch_energies(d, episodes, cache_dir)
+        return score_video_sample(d, episodes, energies)
     except Exception as e:
         return {"robot_id": robot_id(d), "error": f"{type(e).__name__}: {e}",
                 "trace": traceback.format_exc(limit=3)}
+
+
+def score_video_sample(d: Path, episodes: list[int], energies: dict) -> dict:
+    robot = open_robot(d, robot_id=robot_id(d))
+    prof = profile_for(robot)
+    eps = []
+    for i in episodes:
+        ep = robot.episode(i)
+        r = triage_episode(ep, prof, video=True, energy_override=energies.get(i, {}))
+        eps.append(_summary(r))
+    return {"robot_id": robot.robot_id, "robot_type": robot.robot_type, "fps": robot.fps,
+            "codec": robot.video_codec, "lag": prof.lag.tolist(), "episodes": eps}
 
 
 def _json(o):

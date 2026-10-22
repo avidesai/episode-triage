@@ -55,22 +55,37 @@ def cmd_fleet_joints(a):
 def cmd_fleet_video(a):
     from concurrent.futures import ThreadPoolExecutor
 
-    from .fleet import pick_video_sample, run_video_sample, so_arm_dirs
+    from .fleet import pick_video_sample, robot_id, run_video_sample, so_arm_dirs
     dirs = so_arm_dirs(a.root)
     picks = pick_video_sample(dirs, a.robots, a.episodes, a.seed)
-    out = Path(a.out)
+    out, cache = Path(a.out), Path(a.cache)
     out.parent.mkdir(parents=True, exist_ok=True)
-    done = set()
-    if out.exists() and a.resume:
-        done = {json.loads(l)["robot_id"] for l in out.read_text().splitlines() if l.strip()}
-    todo = [(d, e) for d, e in picks if f"{d.parent.name}/{d.name}" not in done]
-    print(f"{len(picks)} robots sampled, {len(todo)} to run")
-    with ThreadPoolExecutor(a.workers) as ex, out.open("a" if a.resume else "w") as f:
-        for k, res in enumerate(ex.map(lambda p: run_video_sample(*p), todo), 1):
+    (out.parent / "video_sample.json").write_text(json.dumps(
+        {"seed": a.seed, "robots": a.robots, "episodes_per_robot": a.episodes,
+         "picks": [[robot_id(d), e] for d, e in picks]}, indent=1))
+    print(f"{len(picks)} robots sampled")
+    with ThreadPoolExecutor(a.workers) as ex, out.open("w") as f:
+        for k, res in enumerate(ex.map(lambda p: run_video_sample(p[0], p[1], cache), picks), 1):
             f.write(json.dumps(res, default=_json) + "\n")
             f.flush()
-            tag = res.get("error", "ok")[:80]
-            print(f"[{k}/{len(todo)}] {res['robot_id']}: {tag}", flush=True)
+            print(f"[{k}/{len(picks)}] {res['robot_id']}: {res.get('error', 'ok')[:80]}", flush=True)
+
+
+def cmd_rescore(a):
+    """Re-score the video sample from cached image change traces, no video download."""
+    from .fleet import _read_energies, score_video_sample
+    sample = json.loads(Path(a.sample).read_text())
+    cache, out = Path(a.cache), Path(a.out)
+    root = Path(a.root)
+    with out.open("w") as f:
+        for rid, eps in sample["picks"]:
+            fz = cache / (rid.replace("/", "__") + ".npz")
+            if not fz.exists():
+                f.write(json.dumps({"robot_id": rid, "error": "no cached video for this robot"}) + "\n")
+                continue
+            res = score_video_sample(root / rid, eps, _read_energies(fz))
+            f.write(json.dumps(res, default=_json) + "\n")
+    print(f"rescored {len(sample['picks'])} robots into {out}")
 
 
 def cmd_inject_eval(a):
@@ -113,9 +128,16 @@ def main(argv=None):
     s.add_argument("--episodes", type=int, default=3)
     s.add_argument("--seed", type=int, default=7)
     s.add_argument("--workers", type=int, default=3)
-    s.add_argument("--resume", action="store_true")
+    s.add_argument("--cache", default="results/energy")
     s.add_argument("--out", default="results/fleet_video.jsonl")
     s.set_defaults(fn=cmd_fleet_video)
+
+    s = sub.add_parser("rescore")
+    s.add_argument("root")
+    s.add_argument("--sample", default="results/video_sample.json")
+    s.add_argument("--cache", default="results/energy")
+    s.add_argument("--out", default="results/fleet_video.jsonl")
+    s.set_defaults(fn=cmd_rescore)
 
     s = sub.add_parser("inject-eval")
     s.add_argument("root")
