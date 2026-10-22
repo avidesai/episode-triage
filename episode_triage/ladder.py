@@ -95,8 +95,9 @@ def _cause_rule(e: Event, all_events: list[Event]) -> tuple[str, int, str, str |
         if e.duration <= RECOVER_S and len(same) < STALE_RECUR:
             return ("R1", 1, f"{what} froze for {e.duration * 1000:.0f} ms {_t(e)} and came back",
                     "restart the stream, hold, and retry the step")
-        why = f"{len(same)} times this episode" if len(same) >= STALE_RECUR else f"for {e.duration:.1f} s"
-        return ("R1b", 2, f"camera or USB link: {what} froze {why}", None)
+        why = f"{len(same)} times in this recording" if len(same) >= STALE_RECUR else f"for {e.duration:.1f} s"
+        fix = "check the camera and its USB link" if e.check == "sensing.stale_camera" else "check the bus reads"
+        return ("R1b", 2, f"{what} froze {why}; {fix}", None)
     if e.check == "actuation.not_following":
         mode = e.evidence.get("mode")
         if mode == "held":
@@ -106,25 +107,41 @@ def _cause_rule(e: Event, all_events: list[Event]) -> tuple[str, int, str, str |
         if e.duration < RECOVER_S:
             return ("R2r", 1, f"{e.component} stopped following ({mode}) for {e.duration:.1f} s {_t(e)} "
                               f"and caught up", "reenable torque and rehome the joint")
-        return ("R2", 2, f"joint {e.component}: not following its command ({mode}) for {e.duration:.1f} s "
-                         f"{_t(e)}, peak gap {e.evidence['peak_err'] * 100:.0f}% of range", None)
+        return ("R2", 2, f"{e.component} stopped following its command ({mode}) for {e.duration:.1f} s "
+                         f"{_t(e)}, up to {e.evidence['peak_err'] * 100:.0f}% of range off; check that joint", None)
     if e.check == "actuation.pinned":
-        return ("R2", 2, f"joint {e.component}: pinned at its {e.evidence['limit']} for {e.duration:.1f} s "
-                         f"{_t(e)} while commanded further; joint limit or calibration range", None)
+        return ("R2", 2, f"{e.component} sat at its {e.evidence['limit']} for {e.duration:.1f} s {_t(e)} while "
+                         f"told to go further; check its joint limit or calibration range", None)
     if e.check == "actuation.command_wrap":
-        return ("R2", 2, f"recalibrate {e.component}: the leader's reading wrapped past its end {_t(e)} "
-                         f"(a jump of {abs(e.evidence['jump']) * 100:.0f}% of range in one frame), so the follower "
-                         f"was sent the long way round", None)
+        return ("R2", 2, f"the leader's {e.component} reading wrapped past its end {_t(e)} (a jump of "
+                         f"{abs(e.evidence['jump']) * 100:.0f}% of range in one frame), so the follower was sent the "
+                         f"long way round; recalibrate {e.component}", None)
     if e.check == "actuation.bus_glitch":
         n = sum(1 for x in all_events if x.check == e.check and x.component == e.component)
         if n >= THRESHOLDS["glitch_ticket_count"]:
-            return ("R3", 2, f"bus or harness: {n} impossible one frame jumps on {e.component}", None)
+            return ("R3", 2, f"{n} impossible one frame jumps on {e.component}; check the bus and harness", None)
         return ("R6", 1, f"one impossible one frame jump on {e.component} {_t(e)}", "none needed, the next read was fine")
     return ("R5", 4, f"{e.check} on {e.component} {_t(e)}: no rule for this cause", None)
 
 
 def short(cam: str) -> str:
     return cam.split(".")[-1]
+
+
+PLAIN_CHECK = {
+    "sensing.stale_camera": "camera froze", "sensing.stale_state": "joint stream repeated",
+    "sensing.camera_lag": "camera lag", "sensing.duplicated_rows": "repeated joint rows",
+    "actuation.not_following": "joint not following", "actuation.rest_offset": "offset at rest",
+    "actuation.gain_mismatch": "calibration mismatch", "actuation.not_tracking": "joint not tracking its leader",
+    "actuation.bus_glitch": "bad bus reads", "actuation.command_wrap": "angle wrap",
+    "actuation.pinned": "joint pinned at its limit",
+}
+
+
+def describe(e: Event) -> str:
+    """A short plain name for an event, for route text a person reads."""
+    part = short(e.component) if e.component.startswith("observation.") else e.component
+    return f"{PLAIN_CHECK.get(e.check, e.check)} on {part}"
 
 
 def triage(events: list[Event], cov: Coverage) -> list[Incident]:
@@ -136,10 +153,10 @@ def triage(events: list[Event], cov: Coverage) -> list[Incident]:
     fatal = [e for e in integrity if e.component in ("joint_stream", "episode")]
     if fatal:
         e = fatal[0]
-        return [Incident("R0", 4, f"data unavailable: {e.check.split('.')[-1]} ({_ev(e)})", e)]
+        return [Incident("R0", 4, f"data unusable: {e.check.split('.')[-1]} ({_ev(e)})", e)]
     incidents = []
     for e in integrity:
-        incidents.append(Incident("R0", 4, f"data unavailable: camera {short(e.component)} "
+        incidents.append(Incident("R0", 4, f"data unusable: camera {short(e.component)} "
                                           f"{e.check.split('.')[-1]} ({_ev(e)})", e))
 
     explained, rest = explain([e for e in events if e not in integrity])
@@ -187,17 +204,15 @@ def triage(events: list[Event], cov: Coverage) -> list[Incident]:
             rule, rung, route, fix = _cause_rule(e, events)
             incidents.append(Incident(rule, rung, route, e))
         elif e.check == "actuation.rest_offset":
-            incidents.append(Incident("R2", 2, f"recalibrate {e.component}: follower sits "
-                                               f"{e.evidence['offset'] * 100:+.0f}% of range from its leader in "
-                                               f"{e.evidence['rest_segments']} rest periods", e))
+            incidents.append(Incident("R2", 2, f"follower {e.component} sits {abs(e.evidence['offset']) * 100:.0f}% "
+                                               f"of range off its leader in {e.evidence['rest_segments']} pauses; "
+                                               f"recalibrate it", e))
         elif e.check == "actuation.gain_mismatch":
-            incidents.append(Incident("R2", 2, f"recalibrate {e.component}: follower moves "
-                                               f"{e.evidence['gain']:.2f} times as far as its leader across "
-                                               f"the range", e))
+            incidents.append(Incident("R2", 2, f"follower {e.component} moves {e.evidence['gain']:.2f} times as "
+                                               f"far as its leader; recalibrate it", e))
         elif e.check == "actuation.not_tracking":
-            incidents.append(Incident("R2", 2, f"joint {e.component}: follower doesn't track its leader "
-                                               f"anywhere in this robot's data (correlation "
-                                               f"{e.evidence['corr']:.2f})", e))
+            incidents.append(Incident("R2", 2, f"follower {e.component} doesn't track its leader anywhere in this "
+                                               f"arm's data (correlation {e.evidence['corr']:.2f}); check that joint", e))
         elif e.check == "sensing.camera_lag":
             incidents.append(Incident("R1b", 2, f"camera {short(e.component)} runs {e.evidence['lag_frames']} frames "
                                                 f"({e.evidence['lag_ms']:.0f} ms) behind the joints", e))
@@ -221,29 +236,29 @@ def _anchor_incident(x: Explained, events: list[Event], cov: Coverage) -> Incide
 def _anchor_rule(x: Explained, events: list[Event], cov: Coverage) -> Incident:
     a = x.anchor
     if x.tie:
-        names = " and ".join(sorted({c.fingerprint for c in x.candidates[:2]}))
-        return Incident("R5", 4, f"{_what(a)} {_t(a)}: {names} began within {0.2:.1f} s of each other, "
-                                 f"so a person should pick", x.primary, a, x.context)
+        names = " and ".join(sorted({describe(c) for c in x.candidates[:2]}))
+        return Incident("R5", 4, f"{_what(a)} {_t(a)}, right after {names}, which began within 0.2 s of each "
+                                 f"other; a person should pick the cause", x.primary, a, x.context)
     cause = x.primary
     if cause is None and a.layer == "actuation":
         cause = a        # a joint that stopped following is its own cause when nothing came first
     if cause is not None:
         rule, rung, route, fix = _cause_rule(cause, events)
         if cause is not a:
-            route = f"{_what(a)} {_t(a)} began with: {route}"
+            route = f"{_what(a)} {_t(a)}, right after this: {route}"
         return Incident(rule, rung, route, cause, a, x.context, fix)
     # Only a task failure with every layer checked and clean goes to training.
     if not cov.sensing_complete:
         missing = ", ".join(short(c) for c in cov.cameras_missing) or "video not checked"
-        return Incident("R0", 4, f"{_what(a)} {_t(a)}: sensing unavailable ({missing}), so this can't be "
-                                 f"called a policy failure", None, a, x.context)
+        return Incident("R0", 4, f"{_what(a)} {_t(a)}, but the cameras weren't checked ({missing}), so it can't "
+                                 f"be called a task failure", None, a, x.context)
     standing = [e for e in events if e.check in STANDING]
     if standing:
-        names = ", ".join(sorted({e.fingerprint for e in standing}))
-        return Incident("R5", 4, f"{_what(a)} {_t(a)} on an episode with a standing fault ({names}); "
-                                 f"a person should decide if it's the policy", None, a, x.context)
-    return Incident("R4", 3, f"training: {_what(a)} from {a.onset:.1f} to {a.t_end:.1f} s with healthy "
-                             f"inputs and tracking", None, a, x.context)
+        names = ", ".join(sorted({describe(e) for e in standing}))
+        return Incident("R5", 4, f"{_what(a)} {_t(a)}, on a recording that also has a {names}; a person "
+                                 f"should decide whether the task or the arm is at fault", None, a, x.context)
+    return Incident("R4", 3, f"{_what(a)} from {a.onset:.1f} to {a.t_end:.1f} s, with fresh pictures and joints "
+                             f"following their commands", None, a, x.context)
 
 
 def _what(a: Event) -> str:

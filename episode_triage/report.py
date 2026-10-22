@@ -108,7 +108,8 @@ def _example_svg(ex: dict) -> str:
                "series": [{"y": np.array(s["joint_cmd"]), "cls": "b", "name": "command (leader)"},
                           {"y": np.array(s["joint_pos"]), "cls": "a", "name": "position (follower)"}]}]
     for k, c in s["cams"].items():
-        panels.append({"label": f"{k.split('.')[-1]} camera: image change (line) and arm motion (shade)",
+        panels.append({"label": f"{k.split('.')[-1].replace('_', ' ')} camera: how much the picture changed "
+                                f"(line) and arm motion (shade)",
                        "series": [{"y": np.clip(np.array(c["motion"]) * 0.6, 0, 6), "cls": "c", "name": "arm motion"},
                                   {"y": np.clip(np.array(c["change"]), 0, 6), "cls": "a", "name": "image change"}],
                        "ylim": (0, 6)})
