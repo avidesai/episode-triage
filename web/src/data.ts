@@ -140,6 +140,10 @@ async function pollLive(): Promise<void> {
   setTimeout(pollLive, wait);
 }
 
+/** A monitor only ever runs next to `triage serve` on someone's machine. On GitHub Pages
+ *  live/ never exists, so polling there would only log a 404 every few seconds. */
+export const livePossible = !location.hostname.endsWith("github.io");
+
 export function startLive(): void {
-  pollLive();
+  if (livePossible) pollLive();
 }

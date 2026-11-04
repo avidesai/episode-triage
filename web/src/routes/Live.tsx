@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { Copy, Rung, StatusMark } from "../components/bits";
 import { IncidentDetail, type Nav } from "../components/IncidentDetail";
-import { arrivals, lastPollOK, live, liveStatus } from "../data";
+import { arrivals, lastPollOK, live, livePossible, liveStatus } from "../data";
 import { ago, nice, num, plural, secs } from "../format";
 import { useKeys } from "../keys";
 import { go, href, route } from "../router";
@@ -166,7 +166,7 @@ function NoMonitor() {
       <div class="live-bar none" role="status">
         <span class="dot none" aria-hidden="true" />
         <b>No monitor connected</b>
-        <span class="muted">Checking for live/data.json every few seconds.</span>
+        <span class="muted">{livePossible ? "Checking for live/data.json every few seconds." : "This is the published copy; the monitor runs on your own machine."}</span>
       </div>
       <p>
         The live monitor runs the same checks as the fleet pass over a sliding window of a running robot's log, and writes each incident here as it fires. It runs on
