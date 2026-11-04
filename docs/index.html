@@ -2,145 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Triage inbox</title>
-<meta name="description" content="A triage inbox for a robot fleet: every failure arrives sorted by who should fix it, with its evidence attached. Loaded with 48,000 real recordings from 1,427 community arms.">
-<style>
-:root{--bg:#fbfaf7;--fg:#1d1d1b;--muted:#6b6a65;--line:#dcd9d0;--card:#ffffff;--soft:#f3f1ea;
---a:#1f5fa8;--b:#b0762a;--c:#d9d4c7;--cause:#c2412d;--anchor:#1f5fa8;--ctx:#8a8778;--truth:#2f8f5b;--hot:#c2412d;--bar:#8fa6bf;
---r0:#9aa79a;--r1:#5f9b6a;--r2:#c98a2e;--r3:#5b7fb8;--r4:#b5483a}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151514;--fg:#ecebe6;--muted:#a3a19a;
---line:#34332f;--card:#1d1d1b;--soft:#222220;--a:#7fb0ea;--b:#e0a95c;--c:#3a3934;--cause:#ef7a62;--anchor:#7fb0ea;--ctx:#8f8c80;
---truth:#5fc48c;--hot:#ef7a62;--bar:#5d7690}}
-:root[data-theme="dark"]{--bg:#151514;--fg:#ecebe6;--muted:#a3a19a;--line:#34332f;--card:#1d1d1b;--soft:#222220;--a:#7fb0ea;
---b:#e0a95c;--c:#3a3934;--cause:#ef7a62;--anchor:#7fb0ea;--ctx:#8f8c80;--truth:#5fc48c;--hot:#ef7a62;--bar:#5d7690}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:860px;margin:0 auto;padding:20px 16px 64px}
-h1{font-size:26px;line-height:1.15;margin:0;letter-spacing:-.01em}
-h2{font-size:20px;margin:40px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
-h3{font-size:16px;margin:20px 0 6px}
-p{margin:0 0 12px}
-a{color:var(--a)}
-.muted{color:var(--muted)}.note{color:var(--muted);font-size:14px}
-code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--soft);border:1px solid var(--line);padding:1px 4px;border-radius:4px}
-.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;margin-bottom:6px}
-.badge{display:inline-block;font-size:12px;font-weight:650;padding:2px 8px;border-radius:999px;background:var(--soft);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
-.badge.live{background:var(--truth);color:#fff;border-color:transparent}
-.lede{font-size:17px;margin:8px 0 6px}
-.indep{font-size:13px;color:var(--muted);margin-bottom:18px}
-nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 4px}
-nav.tabs a{font-size:14px;text-decoration:none;color:var(--fg);padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card)}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
-.chip{font-size:13px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card);cursor:pointer;color:var(--fg)}
-.chip.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.k{display:inline-block;min-width:24px;text-align:center;font-weight:700;color:#fff;border-radius:5px;padding:1px 6px;font-size:13px}
-.k.r0{background:var(--r0)}.k.r1{background:var(--r1)}.k.r2{background:var(--r2)}.k.r3{background:var(--r3)}.k.r4{background:var(--r4)}
-.row{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);margin:6px 0;cursor:pointer}
-.row:hover{border-color:var(--muted)}
-.row .t{font-weight:600}.row .ex{font-size:13px;color:var(--muted);margin-top:2px}
-.row .n{text-align:right;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);white-space:nowrap}
-.row .n b{display:block;font-size:16px;color:var(--fg)}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--hot);margin-left:6px;vertical-align:middle}
-.sub{margin:4px 0 10px 44px;display:grid;gap:4px}
-.sub .inc{font-size:14px;padding:6px 10px;border-left:3px solid var(--line);background:var(--soft);border-radius:0 6px 6px 0;cursor:pointer}
-.sub .inc:hover{border-left-color:var(--a)}
-.sub .inc .w{color:var(--muted);font-size:12px}
-.live-row{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);margin:6px 0;cursor:pointer}
-.live-row.new{border-color:var(--truth);box-shadow:0 0 0 2px color-mix(in srgb,var(--truth) 35%,transparent)}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:14px 0}
-.panel .hd{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
-.panel .route{font-size:17px;font-weight:600;flex:1 1 300px}
-.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:6px 0}
-.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:-1px;opacity:.5}
-.legend .lc{background:var(--cause)}.legend .la{background:var(--anchor)}.legend .lt{background:var(--truth)}.legend .lx{background:var(--ctx)}
-svg{width:100%;height:auto;display:block}
-.tl .ln{fill:none;stroke-width:2}.tl .ln.a{stroke:var(--a)}.tl .ln.b{stroke:var(--b);stroke-dasharray:4 3}.tl .ln.c{stroke:var(--c);stroke-width:5;opacity:.9}
-.tl .axis{stroke:var(--line)}.tl text{fill:var(--muted);font-size:17px}.tl .plabel{fill:var(--fg);font-size:19px}
-.tl .band.cause{fill:var(--cause);opacity:.22}.tl .band.anchor{fill:var(--anchor);opacity:.12}.tl .band.context{fill:var(--ctx);opacity:.18}.tl .band.truth{fill:var(--truth);opacity:.18}
-.tl .bandlabel{font-size:18px;font-weight:650}.tl .bandlabel.cause{fill:var(--cause)}.tl .bandlabel.anchor{fill:var(--anchor)}.tl .bandlabel.truth{fill:var(--truth)}
-ol.trace{margin:6px 0 0;padding-left:22px}ol.trace li{margin:3px 0}
-table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0 6px;font-variant-numeric:tabular-nums}
-th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-weight:650;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.03em}
-td.n,th.n{text-align:right}
-.scroll{overflow-x:auto}
-.ok{color:var(--truth)}.bad{color:var(--hot)}
-details{margin:8px 0}summary{cursor:pointer;font-weight:600}
-.rules .rl{display:grid;grid-template-columns:48px 34px 1fr;gap:10px;align-items:start;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
-.rules .rl .c{color:var(--muted);font-size:13px}
-.rules .rl .id{font:13px ui-monospace,Menlo,monospace}
-ul{padding-left:20px}li{margin:4px 0}
-.finding{border-left:4px solid var(--cause);padding:10px 14px;background:var(--card);border:1px solid var(--line);border-left-width:4px;border-radius:6px;margin:10px 0}
-footer{margin-top:44px;font-size:13px;color:var(--muted)}
-.hidden{display:none}
-#status{font-size:13px;color:var(--muted)}
-.empty{padding:16px;color:var(--muted);border:1px dashed var(--line);border-radius:8px}
-</style>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Triage</title>
+<meta name="description" content="A triage inbox for a robot fleet: every failure sorted by who should fix it, with its evidence attached.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%232457c5'/%3E%3Cpath d='M4 5h8M4 8h5M4 11h7' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preload" href="data.json" as="fetch" crossorigin>
+<script>
+  // Apply a saved theme before first paint so there is no flash.
+  try { var t = localStorage.getItem("triage.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+  <script type="module" crossorigin src="./assets/index-DtD2bJOC.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-p1lX_mdY.css">
 </head>
 <body>
-<main>
-<div class="top">
-  <h1>Triage inbox</h1>
-  <span id="fleetbadge" class="badge">loading</span>
-</div>
-<p class="lede">Every failure from a robot fleet, sorted by who should fix it: the robot itself, a technician with a part named, the training team, or a person who has to look. Each one arrives with the moment it started, what started it, and the evidence.</p>
-<p class="indep">Independent project by Avi Desai. Demo data: the LeRobot community dataset (Apache 2.0), <span id="nrobots"></span> SO 100 and SO 101 arms built and calibrated by different people. Code and every number: <a href="https://github.com/avidesai/episode-triage">github.com/avidesai/episode-triage</a>.</p>
-
-<nav class="tabs">
-  <a href="#inbox">Inbox</a><a href="#live" id="livetab" class="hidden">Live</a><a href="#how">How it decides</a><a href="#trust">How much to trust it</a><a href="#found">What it found</a><a href="#about">What's wrong with it</a>
-</nav>
-
-<h2 id="inbox">Inbox</h2>
-<p class="note">Ranked by how many arms a problem hits, how many runs, and how serious the rung is, so a fault on many arms outranks one repeated on a single arm. A red dot means it recurs: on 2 or more arms, or 3 or more times on one. Click a row for real examples; click an example to see its evidence.</p>
-<div class="chips" id="fixchips"></div>
-<div class="chips" id="layerchips"></div>
-<div id="inboxlist"></div>
-
-<section id="livesec" class="hidden">
-<h2 id="live">Live</h2>
-<p class="note" id="livenote"></p>
-<div id="livelist"></div>
-</section>
-
-<div id="incident"></div>
-
-<h2 id="how">How it decides</h2>
-<p>Three layers of checks run on every run, cheapest evidence first: did the cameras deliver fresh pictures, did the joints do what they were told, and only then, did the task progress. For each failure, the earliest camera or joint problem that began before it is the cause; anything that began after is context. Then ordered rules decide the rung, first match wins. Every threshold is a fraction of a joint's range measured from that arm's own data, so the same rule runs on arms recorded in different units.</p>
-<div id="checks"></div>
-<h3>The ladder</h3>
-<p class="note">Rules run in this order; the first that matches wins. Counts are incidents in the sampled runs (all layers checked) and in all runs (joints only). Click a count to see those incidents.</p>
-<div class="rules" id="rules"></div>
-
-<h2 id="trust">How much to trust it</h2>
-<div id="trust_body"></div>
-
-<h2 id="found">What it found in this fleet</h2>
-<div id="found_body"></div>
-
-<h2 id="about">What's wrong with it</h2>
-<ul>
-<li>Frozen cameras and camera delay are inferred by comparing pictures with joint motion, because this data has no real capture clock. A camera moving over a blank surface can look frozen; those cases get low confidence and never drive a verdict, which costs recall.</li>
-<li>Almost all of the demo data is people teleoperating, so "send to training" here means a task level stall or miss by the operator, not a learned policy failing.</li>
-<li>Joint positions alone can't always tell a grasp on thin cloth from closing on nothing, and can't tell a joint pushing against the world from a dead one. Those go to a person.</li>
-<li>Each dataset counts as one arm; some people recorded several datasets on one arm, so arm counts are an upper bound.</li>
-<li>Camera checks ran on a random sample of arms, not every run.</li>
-<li>Validation so far is faults injected in software into real runs. The live monitor and the recorder exist so the same checks can be scored against faults caused on purpose on a physical arm.</li>
-</ul>
-<h3>What a robot should record so this stops being inference</h3>
-<ul>
-<li><b>Capture time per frame</b> from the camera or a hardware trigger, next to the loop time. Frozen frames and camera lag then become a subtraction instead of a cross check.</li>
-<li><b>Real loop period.</b> A slow loop is only a log line today.</li>
-<li><b>Per motor load, temperature, voltage and status.</b> These servos report all four over the same bus and none is recorded by default. They turn "not following" into "unloaded on overload" or "brownout".</li>
-<li><b>The goal actually sent</b> after any clipping, beside the command.</li>
-<li><b>Every takeover</b> with the progress score and subsystem health at that moment. Each one is a failure someone has already labeled.</li>
-</ul>
-<h3>Running it on your own logs</h3>
-<p>Everything downstream of the reader works on one object, <code>Episode</code>: commanded and measured joint positions, frame rate, which columns are grippers, and a way to get each camera's frames. A new log format needs one file that produces that object; the checks, the cause ordering, the ladder, the inbox and the live monitor run unchanged. <code>episode_triage/readers_template.py</code> in the repo is a starting point. Logs never leave your machine: the tool runs locally and this page is static.</p>
-
-<footer id="foot"></footer>
-</main>
-<script src="app.js"></script>
+<div id="app"></div>
+<noscript>This viewer needs JavaScript. The data is in <a href="data.json">data.json</a>.</noscript>
 </body>
 </html>
