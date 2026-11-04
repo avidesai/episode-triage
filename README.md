@@ -20,11 +20,16 @@ fixed rules anyone can read, and only then lets a failure count as a task failur
 
 Three pieces share one engine:
 
-- **The inbox** (`docs/`): a static page. Problems ranked across the fleet by how many arms
-  and runs they hit, weighted by how serious the rung is. Click a problem for real examples;
-  click an example for its evidence: the arm, the cameras and the gripper on one clock, what
-  started it, what a person would have been called for, the reasoning behind the verdict, and
-  every measurement against its threshold.
+- **The viewer** (`docs/`, built from `web/`): a static web app with an inbox, a fleet view,
+  a live monitor screen and reference pages. The inbox is a queue of every bundled incident
+  that can be sorted, filtered by rung, layer, who fixes it, arm, rule and status, searched, and
+  grouped by problem type, ranked by how many arms and runs each hits weighted by how serious
+  the rung is. Opening an incident shows its evidence: the arm, the cameras and the gripper on
+  one clock, what started it, what a person would have been called for, the reasoning behind
+  the verdict, and every measurement against its threshold. The fleet view has a row per arm
+  with its incidents by rung, recurring problems and camera lag. Status and notes are kept per
+  viewer in the browser. Keyboard: `j` and `k` to move, Enter to open, Esc to close, `?` for
+  the rest. `web/README.md` has the build commands.
 - **The batch run** (`triage fleet-joints`, `triage fleet-video`): the checks over a fleet's
   recorded runs. That is what produced the demo data.
 - **The live monitor** (`triage replay`, `triage serve`, and `recorder/record_labeled.py
@@ -222,9 +227,10 @@ episode_triage/
   inject.py            software fault injection with the recorder's encoder settings
   validate.py          injection eval and bench eval
   ledger.py            fingerprints, recurrence, priority, every number the page quotes
-  site.py              builds docs/data.json and docs/incidents/ from results/
+  site.py              builds docs/data.json, docs/fleet.json and docs/incidents/ from results/
   cli.py               triage run | fleet-joints | fleet-video | rescore | inject-eval | bench-eval | baseline | replay | serve | report
-docs/                  the viewer (index.html, app.js), its data, THRESHOLDS.md
+docs/                  the built viewer (index.html, assets/), its data, THRESHOLDS.md
+web/                   the viewer's source (Preact and TypeScript), DESIGN.md, build commands
 recorder/              SO 101 flight recorder with fault injection and monitor mode, run sheet
 results/               everything the viewer reads
 tests/                 checks on small hand built arrays: math only, never findings
