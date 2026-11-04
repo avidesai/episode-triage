@@ -1,6 +1,7 @@
 """Build the viewer's data from results/: the inbox, one bundle per incident, and the
-numbers the page quotes. The viewer itself is a static page (docs/index.html, docs/app.js)
-that reads these files; the live monitor writes the same bundle shape into docs/live/.
+numbers the page quotes, plus docs/fleet.json with one row per arm. The viewer itself is a
+static app built from web/ into docs/index.html and docs/assets/ that reads these files; the
+live monitor writes the same bundle shape into docs/live/.
 
 Contributors are never named on the page. Each dataset becomes "arm NNNN" through a
 stable index saved in results/robot_index.json, so anyone can map back.
@@ -256,7 +257,7 @@ def _write_fleet(out: Path, joints, video, fleet_rows, anon, summaries) -> None:
         if "episodes" not in r:
             continue
         arms[r["robot_id"]] = {"id": anon[r["robot_id"]], "runs": len(r["episodes"]), "sampled": False,
-                               "sampled_runs": 0, "hw": {}, "task": None, "data": 0, "recurring": [],
+                               "sampled_runs": 0, "hw": {}, "act_tickets": 0, "task": None, "data": 0, "recurring": [],
                                "lag": None, "latest_run": None, "marks": [], "bundled": []}
     per_fp = defaultdict(Counter)
 
@@ -274,6 +275,7 @@ def _write_fleet(out: Path, joints, video, fleet_rows, anon, summaries) -> None:
             a["data"] += 1
         elif row["layer"] in ("sensing", "actuation"):
             a["hw"][str(row["rung"])] = a["hw"].get(str(row["rung"]), 0) + 1
+            a["act_tickets"] += row["rung"] == 2 and row["layer"] == "actuation"
             mark(row["robot_id"], row["episode"], row["rung"], row["fingerprint"])
     for r in video:
         if "episodes" not in r or r["robot_id"] not in arms:
