@@ -28,6 +28,8 @@ RUNG_NAMES = {
 }
 RECOVER_S = THRESHOLDS["follow_recover_s"]
 STALE_RECUR = 3
+WINDOW_BEFORE_S = 3.0
+WINDOW_AFTER_S = 1.5
 
 
 @dataclass
@@ -40,6 +42,7 @@ class Incident:
     context: list[Event] = field(default_factory=list)
     self_recovery: str | None = None
     related: list[Event] = field(default_factory=list)   # other candidates and repeats folded in
+    trace: list[str] = field(default_factory=list)       # the reasoning, one line per step
 
     def involves(self, e: Event) -> bool:
         return e is self.cause or e is self.anchor or any(e is x for x in self.context + self.related)
@@ -59,14 +62,27 @@ class Incident:
         e = self.anchor or self.cause
         return e.onset if e else 0.0
 
+    @property
+    def window(self) -> tuple[float, float]:
+        """Evidence window: look back before whatever started it, a little after it ends."""
+        evs = [e for e in (self.cause, self.anchor, *self.context, *self.related) if e is not None]
+        if not evs:
+            return (0.0, 0.0)
+        return (max(0.0, min(e.onset for e in evs) - WINDOW_BEFORE_S),
+                max(e.t_end for e in evs) + WINDOW_AFTER_S)
+
     def to_dict(self) -> dict:
+        w = self.window
         return {
             "rule": self.rule, "rung": self.rung, "rung_name": RUNG_NAMES[self.rung],
             "route": self.route, "self_recovery": self.self_recovery,
             "fingerprint": self.fingerprint, "layer": self.layer, "onset": round(self.onset, 3),
+            "window": [round(w[0], 3), round(w[1], 3)],
             "cause": self.cause.to_dict() if self.cause else None,
             "anchor": self.anchor.to_dict() if self.anchor else None,
-            "context": [c.fingerprint for c in self.context],
+            "context": [c.to_dict() for c in self.context],
+            "related": [c.to_dict() for c in self.related],
+            "trace": self.trace,
         }
 
 
@@ -224,7 +240,39 @@ def triage(events: list[Event], cov: Coverage) -> list[Incident]:
             incidents.append(Incident("R6", 1, f"one empty close on {e.component} {_t(e)}"
                                                + (", then a good grasp" if ok else ""), None, anchor=e,
                                       self_recovery="retry already worked" if ok else "retry the grasp"))
+    for inc in incidents:
+        inc.trace = _trace(inc, cov)
     return sorted(incidents, key=lambda i: i.onset)
+
+
+def _trace(inc: Incident, cov: Coverage) -> list[str]:
+    """The reasoning behind a verdict, in the order it was made."""
+    lines = []
+    if cov.cameras_checked:
+        lines.append("Checked: joints and " + ", ".join(short(c) for c in cov.cameras_checked) + " camera"
+                     + ("s" if len(cov.cameras_checked) > 1 else ""))
+    else:
+        lines.append("Checked: joints only, no camera data")
+    if cov.cameras_missing:
+        lines.append("Not checked: " + ", ".join(short(c) for c in cov.cameras_missing))
+    a, c = inc.anchor, inc.cause
+    if a is not None and a is not c:
+        lines.append(f"Failure seen {_t(a)}: {_what(a)}")
+    if c is not None:
+        fired = sorted({describe(x) for x in [c, *inc.related]})
+        if len(fired) > 1:
+            lines.append("Started before it: " + "; ".join(fired))
+        lines.append(f"Earliest: {describe(c)} {_t(c)}, so that is the cause")
+    elif a is not None and inc.rule == "R4":
+        lines.append("Nothing in the cameras or joints began before it")
+    if inc.context:
+        lines.append("After it (context, not cause): " + "; ".join(sorted({describe(x) for x in inc.context})))
+    if inc.rule == "R5" and "within 0.2 s" in inc.route:
+        lines.append("Two causes from different layers began within 0.2 s, too close to call")
+    lines.append(f"Rule {inc.rule}: rung {inc.rung}, {RUNG_NAMES[inc.rung]}")
+    if inc.self_recovery:
+        lines.append("Robot can try: " + inc.self_recovery)
+    return lines
 
 
 def _anchor_incident(x: Explained, events: list[Event], cov: Coverage) -> Incident:
@@ -266,6 +314,8 @@ def _what(a: Event) -> str:
         return f"stall of {a.duration:.1f} s"
     if a.check == "task.missed_grasp_sequence":
         return f"{a.evidence['empty_closes']} missed grasps in a row on {a.component}"
+    if a.check == "task.missed_grasp":
+        return f"one missed grasp on {a.component}"
     return f"{a.component} not following"
 
 

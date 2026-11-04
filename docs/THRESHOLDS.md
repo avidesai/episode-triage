@@ -56,7 +56,7 @@ The order things were set in matters, so it is recorded here:
 | `stall_edge_s` | 1.5 s | Episodes start and end at rest by design. |
 | `close_zone` | 0.15 | A close command is the gripper command within 15% of the robot's closed end. Which end is closed is learned per robot from where the follower stops short. |
 | `empty_gap`, `holding_gap` | 0.03, 0.05 | After a close, a follower within 3% of its command has nothing in the jaws; 5% or more short is holding something. On sampled robots the settled gaps split into a cluster at 0 to 3% and a cluster at 10 to 30%. Closes between 3 and 5% are ambiguous and break a sequence rather than extend it. |
-| missed grasp sequence | 2 or more | a published fleet metric: 2 or more consecutive missed grasps. |
+| missed grasp sequence | 2 or more | a metric home robot fleets publish: 2 or more consecutive missed grasps. |
 
 ## Cause ordering
 

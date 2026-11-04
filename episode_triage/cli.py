@@ -106,8 +106,58 @@ def cmd_bench_eval(a):
     bench_eval(Path(a.dataset), Path(a.out))
 
 
+def cmd_replay(a):
+    from .replay import replay
+    eps = [int(x) for x in a.episodes.split(",")] if a.episodes else None
+    replay(Path(a.dataset), Path(a.site), episodes=eps, speed=a.speed,
+           profile=Path(a.profile) if a.profile else None, remote=a.remote, fleet_name=a.name)
+
+
+def cmd_baseline(a):
+    """Start of day check: build the arm's profile from clean runs and report its health."""
+    from .pipeline import profile_for
+    from .readers import open_robot
+    robot = open_robot(Path(a.dataset), robot_id=Path(a.dataset).name)
+    prof = profile_for(robot)
+    out = Path(a.out)
+    out.write_text(json.dumps(prof.to_dict(), indent=1))
+    print(f"profile from {len(robot.episode_indices)} runs written to {out}")
+    for j, name in enumerate(robot.joint_names):
+        flag = ""
+        if j not in robot.gripper_idx and prof.moved[j]:
+            if prof.fit_r[j] < 0.9:
+                flag = "  <- follower does not track its leader"
+            elif abs(prof.gain[j] - 1) > 0.15:
+                flag = "  <- recalibrate: gain off by more than 15%"
+        print(f"  {name:14s} lag {int(prof.lag[j])} frames  gain {prof.gain[j]:.2f}  corr {prof.fit_r[j]:.2f}{flag}")
+
+
+def cmd_serve(a):
+    """Serve the viewer locally so the live inbox updates during a session."""
+    import http.server
+    import socketserver
+
+    site = str(Path(a.site).resolve())
+
+    class NoCache(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kw):
+            super().__init__(*args, directory=site, **kw)
+
+        def end_headers(self):
+            self.send_header("Cache-Control", "no-store")
+            super().end_headers()
+
+        def log_message(self, *args):
+            pass
+
+    socketserver.TCPServer.allow_reuse_address = True
+    with socketserver.TCPServer(("127.0.0.1", a.port), NoCache) as httpd:
+        print(f"viewer at http://127.0.0.1:{a.port}/  (site: {site})", flush=True)
+        httpd.serve_forever()
+
+
 def cmd_report(a):
-    from .report import build
+    from .site import build
     build(Path(a.results), Path(a.out))
 
 
@@ -161,6 +211,26 @@ def main(argv=None):
     s.add_argument("dataset")
     s.add_argument("--out", default="results/bench_eval.json")
     s.set_defaults(fn=cmd_bench_eval)
+
+    s = sub.add_parser("replay", help="stream a recorded run through the online monitor")
+    s.add_argument("dataset")
+    s.add_argument("--site", default="docs")
+    s.add_argument("--episodes")
+    s.add_argument("--speed", type=float, default=1.0, help="1 is real time, 0 is as fast as possible")
+    s.add_argument("--profile", help="profile.json from triage baseline; default builds one from the dataset")
+    s.add_argument("--remote", action="store_true", help="dataset is a community_dataset_v3 entry, stream video")
+    s.add_argument("--name", default="replay")
+    s.set_defaults(fn=cmd_replay)
+
+    s = sub.add_parser("baseline", help="build an arm's profile from clean runs and report its health")
+    s.add_argument("dataset")
+    s.add_argument("--out", default="profile.json")
+    s.set_defaults(fn=cmd_baseline)
+
+    s = sub.add_parser("serve", help="serve the viewer locally")
+    s.add_argument("--site", default="docs")
+    s.add_argument("--port", type=int, default=8080)
+    s.set_defaults(fn=cmd_serve)
 
     s = sub.add_parser("report")
     s.add_argument("--results", default="results")

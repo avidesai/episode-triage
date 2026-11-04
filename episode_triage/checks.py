@@ -61,7 +61,7 @@ THRESHOLDS = {
     "stall_speed": 0.005,
     "stall_min_s": 2.0,
     "stall_edge_s": 1.5,
-    # T2 missed grasp (a home robot company's metric: 2 or more consecutive missed grasps)
+    # T2 missed grasp (a published fleet metric: 2 or more consecutive missed grasps)
     "close_zone": 0.15,           # command within 15% of range of the closed end
     "close_settle_s": 0.3,
     "empty_gap": 0.03,            # follower reached the command: nothing in the jaws
@@ -123,6 +123,23 @@ class RobotProfile:
     bias: np.ndarray = None
     fit_r: np.ndarray = None
     moved: np.ndarray = None      # joints commanded over enough of their range to judge calibration
+
+    def to_dict(self) -> dict:
+        return {"ranges": self.ranges.tolist(), "lag": self.lag.tolist(), "state_lo": self.state_lo.tolist(),
+                "state_hi": self.state_hi.tolist(),
+                "gripper_closed_low": {str(k): v for k, v in self.gripper_closed_low.items()},
+                "gripper_active": {str(k): v for k, v in self.gripper_active.items()},
+                "gripper_closed_value": {str(k): v for k, v in self.gripper_closed_value.items()},
+                "gain": self.gain.tolist(), "bias": self.bias.tolist(), "fit_r": self.fit_r.tolist(),
+                "moved": self.moved.tolist()}
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "RobotProfile":
+        return cls(np.array(d["ranges"]), np.array(d["lag"], dtype=int), np.array(d["state_lo"]),
+                   np.array(d["state_hi"]), {int(k): v for k, v in d["gripper_closed_low"].items()},
+                   {int(k): v for k, v in d["gripper_active"].items()},
+                   {int(k): v for k, v in d["gripper_closed_value"].items()},
+                   np.array(d["gain"]), np.array(d["bias"]), np.array(d["fit_r"]), np.array(d["moved"], dtype=bool))
 
 
 def build_profile(action: np.ndarray, state: np.ndarray, gripper_idx: list[int]) -> RobotProfile:
@@ -517,7 +534,7 @@ def grasp_attempts(sig: EpisodeSignals, prof: RobotProfile, g: int) -> list[dict
 
 
 def check_missed_grasp(sig: EpisodeSignals, prof: RobotProfile) -> list[Event]:
-    """T2. a published fleet metric: 2 or more consecutive missed grasps.
+    """T2. a metric home robot fleets publish: 2 or more consecutive missed grasps.
 
     A single empty close followed by a holding close is a recovered miss (the robot
     cleared it itself). Two or more empties in a row with no hold between them is a

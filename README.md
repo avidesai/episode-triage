@@ -1,23 +1,77 @@
 # episode-triage
 
-Before a robot's failure goes to retraining, check the cheap layers first: did the cameras
-deliver fresh pictures, and did the joints do what they were told? This tool does that from the
-logs alone, then puts every problem on a ladder: clean, the robot can clear it itself, a ticket
-for a named part, send it to training, or a person has to look and here is why.
+A triage inbox for a robot fleet. Every failure arrives sorted by who should fix it: the
+robot itself, a technician with the part named, the training team, or a person who has to
+look. Each one comes with the moment it started, what started it, and the evidence.
 
-**Report:** https://avidesai.github.io/episode-triage/
+**Viewer, loaded with 48,000 real runs from 1,427 arms:** https://avidesai.github.io/episode-triage/
 
 Independent project. Not affiliated with any robot company.
 
 ## Why
 
-A fleet that runs every day produces more failures than a small team can look at. Most of the
-time spent on a failure goes into working out what kind of failure it is, and the costly mistake
-is retraining the policy on a failure that was really a frozen camera or a misbehaving joint. I
-wanted to see how much of that first pass can be done from the logs alone, with fixed rules,
-before a person opens anything.
+A fleet that runs every day produces more failures than a small team can look at. Most of
+the time spent on a failure goes into working out what kind of failure it is, and the costly
+mistake is retraining the policy on a failure that was really a frozen camera or a joint that
+didn't do what it was told. This checks the cheap layers first, from the logs alone, with
+fixed rules anyone can read, and only then lets a failure count as a task failure.
 
-## What it found
+## What it is
+
+Three pieces share one engine:
+
+- **The inbox** (`docs/`): a static page. Problems ranked across the fleet by how many arms
+  and runs they hit, weighted by how serious the rung is. Click a problem for real examples;
+  click an example for its evidence: the arm, the cameras and the gripper on one clock, what
+  started it, what a person would have been called for, the reasoning behind the verdict, and
+  every measurement against its threshold.
+- **The batch run** (`triage fleet-joints`, `triage fleet-video`): the checks over a fleet's
+  recorded runs. That is what produced the demo data.
+- **The live monitor** (`triage replay`, `triage serve`, and `recorder/record_labeled.py
+  --monitor`): the same checks over a sliding window of a running robot's log. When a stall,
+  a missed grasp or a tracking loss fires, the monitor cuts the evidence window, orders the
+  causes, routes it, and posts it to the inbox while the robot keeps running.
+
+## The ladder
+
+Ordered rules, first match wins. Rule 0 runs first: if the data is broken or a layer wasn't
+checked, the failure goes to a person with one line saying what's missing, and nothing
+reaches training on a guess.
+
+| Rung | Meaning | Examples |
+|---|---|---|
+| 0 | clean | nothing fired |
+| 1 | the robot can clear it itself | a camera froze under 1 s and came back; one bad bus read; a missed grasp then a good one |
+| 2 | ticket for a named part | camera or USB link, joint not following, recalibrate a joint, bus or harness, leader angle wrap |
+| 3 | send to training | a stall or missed grasps with fresh pictures and joints that followed |
+| 4 | a person has to look | data missing, two causes too close to call, a joint held off its command with nothing moving |
+
+Checks, cheapest evidence first:
+
+1. **Integrity.** NaNs, runs under 2 s, frame index gaps, video and joint row counts that
+   disagree, video that won't decode.
+2. **Cameras and timing.** A camera that stopped updating while the joints that move it, or
+   that it watches, were moving. The joint stream repeating while the command moves. Camera
+   latency relative to the joints, judged per arm.
+3. **Joints.** A follower joint that left its command and stayed away (stalled, sagging,
+   lagging, or held off with nothing moving); a follower offset from its leader at rest;
+   leader and follower calibrated over different spans; one frame jumps no real joint can make;
+   a leader reading that wraps past 180 degrees and sends the follower the long way round; a
+   joint pinned at its limit while pushed further.
+4. **Task.** Stalls (nothing commanded and nothing moving for 2 s) and missed grasps, with a
+   missed grasp sequence defined as 2 or more consecutive missed grasps.
+5. **What started it.** For each stall, missed grasp sequence or tracking loss, look back 3 s.
+   The earliest camera or joint event that began before it is the cause; anything that began
+   after is context. A camera can make a policy stall but can't make a follower stop tracking
+   its leader, so tracking losses only accept joint causes. Two causes from different layers
+   within 0.2 s go to a person.
+
+No model calls anywhere. Every decision is signal processing on aligned streams that can be
+read line by line, and it runs over 48,000 runs in under a minute on a laptop.
+[docs/THRESHOLDS.md](docs/THRESHOLDS.md) lists every threshold with its physical reason and
+which ones changed after looking at healthy data, and why.
+
+## What it found in the demo fleet
 
 <!-- FINDING:start -->
 Run on the LeRobot community dataset: 1,427 SO 100 and SO 101 arms built by different people, 48,208 recordings, 241.4 hours. Across those arms the check found joint or calibration faults on about 1 in 7 arms and frozen cameras in about 1 in 14 recordings. It also proved my own prediction wrong: nearly every stall was really the operator pausing.
@@ -43,77 +97,7 @@ What to fix first across all arms (joint and data problems; stalls need the vide
 Every number here is computed by `episode_triage/ledger.py` from `results/`, and the same numbers are in `docs/data.json`.
 <!-- FINDING:end -->
 
-## What it does
-
-For each episode:
-
-1. **Rule 0.** Integrity first: NaNs, episodes under 2 s, frame index gaps, video and joint
-   row counts that disagree, video that won't decode. Any of these, or a layer that wasn't
-   checked, and the episode goes to a person with one line saying what's missing.
-2. **Sensing and timing.** A camera that stopped updating while the joints that move it (or
-   that it watches) were moving. The joint stream repeating while the command moves. Camera
-   latency relative to the joints, judged per robot.
-3. **Actuation.** A follower joint that left its command and stayed away (stalled, sagging,
-   lagging, or held off with nothing moving), a follower that sits offset from its leader at
-   rest, leader and follower calibrated over different spans, one frame jumps no real joint
-   can make (bad bus reads), a leader reading that wraps past +-180 degrees and sends the
-   follower the long way round, and a joint pinned at its limit while pushed further.
-4. **Task.** Stalls (nothing commanded and nothing moving for 2 s) and missed grasps, using
-   the definition of a missed grasp sequence as 2 or more consecutive missed grasps.
-5. **What started it.** Stalls, missed grasp sequences and tracking losses are anchors. For
-   each one it looks back 3 s; the earliest sensing or actuation event that began before the
-   anchor is the cause, and anything that began after is context. A camera can make a policy
-   stall but can't make a follower stop tracking its leader, so tracking losses can only be
-   explained by actuation events. Two causes from different layers within 0.2 s go to a person.
-6. **The ladder.** Ordered rules, first match wins. Route text is generated from event fields,
-   so the same situation always reads the same way.
-
-| Rung | Meaning | Examples |
-|---|---|---|
-| 0 | clean | nothing fired |
-| 1 | the robot can clear it itself | a camera froze under 1 s and came back; one bad bus read; a missed grasp followed by a good one |
-| 2 | ticket for a named part | camera or USB link, joint not following, recalibrate a joint, bus or harness, recorder |
-| 3 | send to training | a stall or missed grasps with fresh inputs and healthy tracking |
-| 4 | a person has to look | data missing, two causes too close to call, a joint held off its command with nothing moving (contact or a dead joint) |
-
-Across a fleet, every incident becomes a ledger row with a fingerprint (check plus the part it
-names), and fingerprints are ranked by robots affected times episodes affected times a rung
-weight, with a recurring flag at 2 or more robots or 3 or more times on one.
-
-No model calls anywhere. Every decision is signal processing on aligned streams that can be
-read line by line, and it runs over 48,000 episodes in under a minute on a laptop.
-
-## How it works, and why each piece is there
-
-**The clock can't be trusted, so the content has to be.** In LeRobot, `add_frame` writes
-`timestamp = frame_index / fps`, and the SO follower reads its cameras with `read_latest()`,
-which returns whatever frame is in the buffer unless it's more than 500 ms old. A camera that
-stalls for 400 ms is recorded as fresh frames with perfect timestamps. So stale frames are
-found by cross checking: the picture didn't change while the joints that move that camera, or
-that it can see, did. A still scene and a frozen camera look identical in the image alone; the
-joints are what separate a dead sensor from a quiet room.
-
-**Video is lossy, so "didn't change" needs a threshold calibrated on real compression.** Frames
-are decoded to 80x60 grayscale with area averaging, which cuts most AV1 noise. Faults were
-injected into decoded frames and reencoded with LeRobot's own defaults (libsvtav1, crf 30,
-GOP 2, yuv420p). A repeated frame comes back as exactly 0 change except at one GOP boundary.
-
-**The follower trails its leader, so tracking error is measured against the lagged command.**
-Healthy SO followers trail by 3 to 5 frames. Leader and follower are also calibrated
-separately and can disagree by a gain, so tracking loss is measured against a per robot fit of
-follower against leader. The fit itself is reported as a calibration ticket when the gain is
-off by more than 15% or the follower doesn't track at all.
-
-**Every threshold is a fraction of a joint's range,** where the range comes from all of a
-robot's data. The same rule then runs on arms recorded in normalized units, degrees, or
-radians. [docs/THRESHOLDS.md](docs/THRESHOLDS.md) lists every value with its physical reason
-and records which ones were changed after looking at healthy data, and why.
-
-**Cause before context.** Two or three signals usually light up around a failure; only the
-one that came first can explain it. That is what keeps a stall that began with a frozen wrist
-camera from going to training as a policy failure.
-
-## Validation
+## How much to trust it
 
 <!-- VALIDATION:start -->
 Faults injected into real community episodes with a known answer. Video faults were reencoded with LeRobot's default encoder settings so they reach the detector through real compression.
@@ -140,94 +124,110 @@ Raw rows are in `results/inject_eval.json`.
 **Bench set on a physical arm: not recorded yet.** The recorder and run sheet are in `recorder/` but haven't been run on hardware. `triage bench-eval` scores the set and `triage report` adds it here once it exists.
 <!-- VALIDATION:end -->
 
-## Run it
+## Running it
 
 ```bash
 pip install -e .
-# one dataset from the Hub or a local LeRobot v3.0 directory
+
+# one recorded dataset, from the Hub or a local LeRobot v3.0 directory
 triage run lerobot/aloha_static_towel --episodes 0,1,2
-# the fleet run behind the report
+
+# the fleet behind the viewer
 triage fleet-joints .cache/community_v3
 triage fleet-video .cache/community_v3 --robots 300 --episodes 3 --seed 7
 triage inject-eval .cache/community_v3
-triage report
+triage report                      # rebuilds docs/ from results/
+
+# live: rehearse with a recorded run, then watch it in the viewer
+triage serve --site docs           # http://127.0.0.1:8080/
+triage replay path/to/dataset --site docs --speed 1
 ```
 
-The community data is `lerobot/community_dataset_v3` at revision
-`ab92ac3fa4d0c08336e21b8e51cb9dc279535539`. `results/` holds every output the page reads,
-including each sampled camera's image change trace (`results/energy/`), so `triage rescore` and
-`triage report` rebuild everything without downloading video again.
+The demo data is `lerobot/community_dataset_v3` at revision
+`ab92ac3fa4d0c08336e21b8e51cb9dc279535539`. `results/` holds every output the viewer reads,
+including each sampled camera's image change trace, so `triage rescore` and `triage report`
+rebuild everything without downloading video again. Arms on the page are numbered, not
+named; `results/robot_index.json` maps them back.
 
-To point it at another log format, write a reader that returns `Episode` objects
-(`episode_triage/readers.py`); everything downstream reads only that.
+### On a physical arm
 
-## Recording ground truth on a real arm
+`recorder/record_labeled.py` drives an SO 101 leader and follower, records a normal LeRobot
+dataset plus a sidecar with what the format drops (real loop timing, the true age of every
+camera frame, servo load, temperature, voltage and status, and an exact log of injected
+faults), and with `--monitor` runs the live monitor on every tick. `recorder/PROTOCOL.md` is
+the run sheet, from the start of day baseline to a scored set of faults caused on purpose.
 
-`recorder/record_labeled.py` records an SO 101 leader and follower into a normal LeRobot
-dataset plus a sidecar with what the format drops: real loop timing, the true age of every
-camera frame, servo load, temperature, voltage and status, and an exact log of injected faults
-(camera freeze, camera delay, torque cut on one joint, calibration shift, and operator
-performed ones on a cue). `recorder/PROTOCOL.md` is the run sheet; `triage bench-eval` scores
-the tool against it. The recorder is written against LeRobot 0.6.1 and checked against 0.6.2,
-but it hasn't been run on hardware yet, so the first session starts with a dry run.
+### On your own log format
+
+Everything downstream of the reader works on one object, `Episode` (commanded and measured
+joint positions, frame rate, which columns are grippers, and each camera's frames as small
+grayscale images). A new log format needs one file that produces it; the checks, the cause
+ordering, the ladder, the inbox and the live monitor run unchanged.
+`episode_triage/readers_template.py` is the starting point and `episode_triage/readers.py`
+is the worked example. Logs never leave your machine: the tool runs locally and the page is
+static.
 
 ## What's wrong with it
 
-- **Stale camera and lag are inferences.** With no real capture time, both come from picture
-  content against joint motion. A wrist camera moving over a blank surface can look frozen;
-  those runs get low confidence and stay out of the counts, but they still cost recall.
-- **"Policy" means the operator here.** Almost all community data is teleoperation, so rung 3
-  is task level stalls and misses, not a learned policy failing. Most stalls are people pausing.
-- **Thin cloth.** Proprioception alone can't always tell a grasp on one layer of fabric from an
-  empty close. Closes between 3% and 5% of range are called ambiguous and never extend a
-  missed grasp sequence.
-- **Robots are datasets.** Each community dataset counts as one robot. Some people recorded
-  several datasets on one arm, so robot counts are an upper bound on physical arms.
-- **Injected faults are clean.** The injection eval proves the detectors and the ladder fire on
-  a known answer. It doesn't prove natural faults look the same. The bench set on a physical
-  arm is the step that tests that.
-- **The video checks ran on a seeded sample** of robots and episodes, not every episode.
-- **Format version tells you nothing here.** Every community dataset was converted to v3.0, so
-  the original recording software version is gone and failure rates can't be sliced by it.
+- **Frozen cameras and camera lag are inferences.** With no real capture time in the data,
+  both come from picture content against joint motion. A camera moving over a blank surface
+  can look frozen; those cases get low confidence and never drive a verdict, but they cost
+  recall.
+- **"Training" means the operator in this data.** Almost all community data is
+  teleoperation, so rung 3 is task level stalls and misses, not a learned policy failing.
+  Most stalls are people pausing.
+- **Thin cloth.** Joint positions alone can't always tell a grasp on one layer of fabric from
+  an empty close. Closes between 3% and 5% of range are called ambiguous.
 - **Contact versus a dead joint.** A joint held off its command with nothing moving could be
-  pushing against the table or could be dead. Position data can't tell them apart, so it goes
-  to a person.
+  pushing against the table or could be dead. Position data can't tell, so it goes to a
+  person.
+- **Arms are datasets.** Some people recorded several datasets on one arm, so arm counts are
+  an upper bound.
+- **Injected faults are clean.** The injection eval proves the detectors and the ladder fire
+  on a known answer. It doesn't prove natural faults look the same. The recorder and the
+  live monitor exist so the same checks can be scored against faults caused on purpose on a
+  physical arm.
+- **The live monitor adds a few seconds of latency.** A stall needs 2 s to exist and an
+  incident is reported once its evidence window is complete, so a fault appears in the inbox
+  roughly 2 to 5 s after it starts.
 
 ## What I'd build next
 
-- **An MCAP reader** for ROS 2 bags and logs with real capture timestamps and PTP. Stale frames
-  and lag then become exact, and the content checks become a fallback for data that lost its
-  clock.
-- **Servo load, current and temperature in the recorded observation** by default. Every
-  "not following" event would then say whether the motor unloaded, overheated, or browned out.
-- **A learned progress or value model** in place of the motion stall heuristic, which is what a
-  real behavior executive uses to decide a robot is stuck.
-- **Takeovers as anchors.** Run it on a fleet's own intervention logs, where every specialist
-  takeover is an anchor with a human label already attached, and measure how many takeovers
-  started with something the robot could have cleared itself.
-- **A camera moved check** (phase correlation on the scene view with the arm masked out) for
-  bumped mounts and calibration drift.
+- **An MCAP reader** for ROS 2 bags and logs with real capture timestamps and PTP, where
+  frozen frames and lag become exact and the content checks become a fallback.
+- **Servo load, current and temperature in the recorded observation** by default, so every
+  "not following" says whether the motor unloaded, overheated or browned out.
+- **A learned progress model** in place of the motion stall heuristic, which is what a real
+  behavior executive uses to decide a robot is stuck.
+- **Takeovers as anchors.** Run it on a fleet's own intervention logs, where every operator
+  takeover is a failure with a human label already attached, and measure how many began with
+  something the robot could have cleared itself.
+- **A camera moved check** for bumped mounts and calibration drift.
 
 ## Layout
 
 ```
 episode_triage/
-  readers.py    LeRobot v3.0 -> Episode
-  video.py      decode one episode's slice of an MP4 to 80x60 gray
-  signals.py    ranges, speeds, follower lag, image change, cross correlation
-  checks.py     sensing, actuation and task checks, THRESHOLDS
-  timeline.py   anchors, look back, cause versus context
-  ladder.py     ordered rules R0 to R6, route text
-  pipeline.py   one episode end to end
-  fleet.py      fleet runs and the video sample
-  inject.py     software fault injection with LeRobot's encoder settings
-  validate.py   injection eval and bench eval
-  ledger.py     fingerprints, recurrence, priority, every number the page quotes
-  report.py     builds docs/index.html from results/
-recorder/       SO 101 flight recorder and protocol
-results/        everything the page reads
-docs/           the report page and THRESHOLDS.md
-tests/          checks on small hand built arrays: math only, never findings
+  readers.py           LeRobot v3.0 -> Episode
+  readers_template.py  the one file a new log format needs
+  video.py             decode one run's slice of an MP4 to 80x60 gray
+  signals.py           ranges, speeds, follower lag, image change, cross correlation
+  checks.py            sensing, actuation and task checks, THRESHOLDS
+  timeline.py          anchors, look back, cause versus context
+  ladder.py            ordered rules, route text, the reasoning trace
+  pipeline.py          one run end to end
+  monitor.py           the online monitor and the incident bundle
+  replay.py            stream a recorded run through the monitor
+  fleet.py             fleet runs and the video sample
+  inject.py            software fault injection with the recorder's encoder settings
+  validate.py          injection eval and bench eval
+  ledger.py            fingerprints, recurrence, priority, every number the page quotes
+  site.py              builds docs/data.json and docs/incidents/ from results/
+  cli.py               triage run | fleet-joints | fleet-video | rescore | inject-eval | bench-eval | baseline | replay | serve | report
+docs/                  the viewer (index.html, app.js), its data, THRESHOLDS.md
+recorder/              SO 101 flight recorder with fault injection and monitor mode, run sheet
+results/               everything the viewer reads
+tests/                 checks on small hand built arrays: math only, never findings
 ```
 
 ## License

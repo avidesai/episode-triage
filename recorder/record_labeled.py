@@ -12,8 +12,11 @@ format throws away:
   fault, fault_target, fault_active
                          the injected fault and the exact ticks it was active
 
-Faults are applied inside the same loop on a fixed schedule from the command line, so
-the log and the injection can't disagree.
+Faults are applied inside the same loop, either on a schedule or when you press Enter
+(--trigger key), so the log and the injection can't disagree.
+
+With --monitor, every tick also goes through the online triage monitor, and incidents
+appear in the viewer served by `triage serve` while the arm keeps running.
 
 Built against lerobot 0.6.1 and checked against 0.6.2. Run every hardware step yourself, with the arm low over the
 table and a hand near it for torque_off.
@@ -30,6 +33,8 @@ from __future__ import annotations
 import argparse
 import collections
 import json
+import sys
+import threading
 import time
 from pathlib import Path
 
@@ -75,6 +80,12 @@ def parse():
     p.add_argument("--fault-len-s", type=float, default=2.0)
     p.add_argument("--offset", type=float, default=8.0, help="calibration_shift, in the arm's own units")
     p.add_argument("--delay-ticks", type=int, default=3)
+    p.add_argument("--trigger", choices=["schedule", "key"], default="schedule",
+                   help="schedule: the fault runs at --fault-start-s; key: it runs when you press Enter in this terminal")
+    p.add_argument("--monitor", action="store_true",
+                   help="run the online triage monitor on every tick and post incidents to --site")
+    p.add_argument("--site", type=Path, default=Path("docs"), help="viewer folder served by `triage serve`")
+    p.add_argument("--profile", type=Path, help="profile.json from `triage baseline`; default builds one from --root")
     return p.parse_args()
 
 
@@ -104,12 +115,14 @@ def main():
                                         robot_type="so101_follower", use_videos=True)
     (a.root / "sidecar").mkdir(parents=True, exist_ok=True)
     motors = list(robot.bus.motors)
+    mon = make_monitor(a, motors) if a.monitor else None
+    trig = KeyTrigger() if a.trigger == "key" else None
 
     try:
         for _ in range(a.episodes):
             input(f"Reset the scene, then press Enter to record ({a.fault}, {a.fault_target or 'no target'})")
             ep_index = dataset.meta.total_episodes
-            rows = record_episode(a, robot, leader, dataset, motors)
+            rows = record_episode(a, robot, leader, dataset, motors, mon, trig)
             dataset.save_episode()
             side = a.root / "sidecar" / f"episode_{ep_index:06d}.jsonl"
             side.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
@@ -122,7 +135,49 @@ def main():
         leader.disconnect()
 
 
-def record_episode(a, robot, leader, dataset, motors):
+class KeyTrigger:
+    """Press Enter in the terminal to start the fault now. Works any number of times."""
+
+    def __init__(self):
+        self.fired_at: int | None = None
+        self.pending = False
+        threading.Thread(target=self._read, daemon=True).start()
+
+    def _read(self):
+        for _ in sys.stdin:
+            self.pending = True
+
+    def take(self, tick: int) -> None:
+        if self.pending:
+            self.pending = False
+            self.fired_at = tick
+
+
+def make_monitor(a, motors):
+    from episode_triage.checks import RobotProfile
+    from episode_triage.monitor import LiveSite, Monitor
+
+    if a.profile:
+        prof = RobotProfile.from_dict(json.loads(a.profile.read_text()))
+    elif (a.root / "meta" / "info.json").exists():
+        from episode_triage.pipeline import profile_for
+        from episode_triage.readers import open_robot
+        prof = profile_for(open_robot(a.root, robot_id=a.root.name))
+    else:
+        sys.exit("--monitor needs a profile: run `triage baseline <clean runs>` first, or record clean runs into --root")
+    arm = [i for i, m in enumerate(motors) if m != "gripper"]
+    cams = {"observation.images.wrist": arm, "observation.images.scene": arm}
+    site = LiveSite(a.site, a.follower_id, fleet_name="live")
+
+    def on_inc(live):
+        site.add(live)
+        inc = live.incident
+        print(f"\n  >> [{live.t_abs:6.1f} s] rung {inc['rung']} {inc['rung_name']}: {inc['route']}", flush=True)
+
+    return Monitor(a.follower_id, prof, a.fps, motors, [motors.index("gripper")], cams, on_incident=on_inc)
+
+
+def record_episode(a, robot, leader, dataset, motors, mon=None, trig=None):
     period = 1.0 / a.fps
     n_ticks = int(a.episode_s * a.fps)
     f0 = int(a.fault_start_s * a.fps)
@@ -136,8 +191,13 @@ def record_episode(a, robot, leader, dataset, motors):
     t_start = time.perf_counter()
     t_prev = t_start
 
+    n_fault = int(a.fault_len_s * a.fps)
     for tick in range(n_ticks):
         t0 = time.perf_counter()
+        if trig is not None:
+            trig.take(tick)
+            f0 = trig.fired_at if trig.fired_at is not None else n_ticks + 1
+            f1 = f0 + n_fault
         active = a.fault != "none" and f0 <= tick < f1
         if a.fault != "none" and tick in (f0, f1):
             # label only faults are performed by the operator on this cue
@@ -204,6 +264,16 @@ def record_episode(a, robot, leader, dataset, motors):
                  "task": a.task}
         dataset.add_frame(frame)
         rows.append(row)
+
+        if mon is not None:
+            from episode_triage.monitor import Tick, gray_small
+            import numpy as np
+            mon.push(Tick(
+                action=np.array([act[f"{m}.pos"] for m in motors], dtype=float),
+                state=np.array([obs[f"{m}.pos"] for m in motors], dtype=float),
+                gray={f"observation.images.{k}": gray_small(obs[k]) for k in robot.cameras},
+                t_wall=now,
+                truth={"fault": a.fault, "target": a.fault_target, "active": bool(row["fault_active"])}))
         precise_sleep(max(period - (time.perf_counter() - t0), 0.0))
     return rows
 

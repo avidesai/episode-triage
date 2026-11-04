@@ -5,3 +5,6 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 results/scratch/
+docs/live/
+profile.json
+data/
