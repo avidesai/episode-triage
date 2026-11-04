@@ -232,30 +232,45 @@ class LiveSite:
     """Writes incidents where the viewer reads them: <site>/live/data.json and
     <site>/live/incidents/<id>.json. The page polls data.json and pulls new incidents."""
 
-    def __init__(self, site: Path, robot_id: str, fleet_name: str = "live"):
+    def __init__(self, site: Path, robot_id: str, fleet_name: str = "live",
+                 robot_index: Path = Path("results/robot_index.json")):
         self.site = Path(site)
         self.dir = self.site / "live"
         (self.dir / "incidents").mkdir(parents=True, exist_ok=True)
-        self.robot_id = robot_id
+        # A replayed community dataset is named after its contributor. The page never shows
+        # that: when the id is in the fleet's index, the page gets the arm number instead.
+        self.raw_id = robot_id
+        index = json.loads(robot_index.read_text()) if robot_index.exists() else {}
+        self.robot_id = index.get(robot_id, robot_id)
         self.fleet_name = fleet_name
         self.rows: list[dict] = []
         self.started = time.time()
         self.write()
 
+    def _scrub(self, s: str) -> str:
+        if self.robot_id == self.raw_id:
+            return s
+        return s.replace(self.raw_id.replace("/", "__"), self.robot_id.replace(" ", "_")).replace(self.raw_id, self.robot_id)
+
     def add(self, live: LiveIncident) -> None:
-        (self.dir / "incidents" / f"{live.id}.json").write_text(json.dumps(live.to_dict(), default=_json))
+        d = live.to_dict()
+        d["id"], d["robot_id"] = self._scrub(live.id), self.robot_id
+        if d["incident"].get("supersedes"):
+            d["incident"]["supersedes"] = self._scrub(d["incident"]["supersedes"])
+        (self.dir / "incidents" / f"{d['id']}.json").write_text(json.dumps(d, default=_json))
         inc = live.incident
-        self.rows.append({"id": live.id, "robot_id": live.robot_id, "t": live.t_abs, "rung": inc["rung"],
+        self.rows.append({"id": d["id"], "robot_id": self.robot_id, "t": live.t_abs, "rung": inc["rung"],
                           "rung_name": inc["rung_name"], "rule": inc["rule"], "route": inc["route"],
                           "fingerprint": inc["fingerprint"], "layer": inc["layer"],
                           "self_recovery": inc["self_recovery"], "truth": live.truth,
-                          "bundle": f"live/incidents/{live.id}.json", "wall": time.time() - self.started})
+                          "supersedes": d["incident"].get("supersedes"),
+                          "bundle": f"live/incidents/{d['id']}.json", "wall": time.time() - self.started})
         self.write()
 
     def write(self) -> None:
         (self.dir / "data.json").write_text(json.dumps({
             "mode": "live", "fleet": self.fleet_name, "robot_id": self.robot_id,
-            "generated_at": time.time(), "incidents": self.rows}, default=_json))
+            "started_at": self.started, "generated_at": time.time(), "incidents": self.rows}, default=_json))
 
 
 def gray_small(rgb: np.ndarray) -> np.ndarray:

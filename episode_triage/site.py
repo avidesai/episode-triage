@@ -19,7 +19,7 @@ from .checks import THRESHOLDS
 from .fleet import COMMUNITY, _json, _read_energies, score_video_sample
 from .ladder import RUNG_NAMES
 from .ledger import fingerprint as fp_of
-from .ledger import findings, ledger_rows, load, rank_fingerprints
+from .ledger import LAG_FLAG, RECUR_ON_ONE, findings, ledger_rows, load, rank_fingerprints, robot_lags
 from .monitor import package_incident
 from .pipeline import profile_for, triage_episode
 from .readers import open_robot
@@ -180,6 +180,8 @@ def build(results: Path, out: Path, max_joint_examples: int = 4) -> None:
                           "examples": by_fp.get(t["fingerprint"], [])[:12]})
     inbox.sort(key=lambda x: -x["priority"])
 
+    _write_fleet(out, joints, video, fleet_rows, anon, summaries)
+
     rule_counts = Counter(i["rule"] for r in video if "episodes" in r for e in r["episodes"] for i in e["incidents"])
     rule_counts_fleet = Counter(i["rule"] for r in joints if "episodes" in r for e in r["episodes"] for i in e["incidents"])
 
@@ -200,7 +202,7 @@ def build(results: Path, out: Path, max_joint_examples: int = 4) -> None:
                    for l, i, n, s, t, w in CHECKS],
         "thresholds": THRESHOLDS,
         "plain": PLAIN,
-        "validation": {"summary": inj["summary"], "calibration": inj["calibration"]} if inj else None,
+        "validation": {"summary": inj["summary"], "calibration": _anon_calibration(inj["calibration"], anon)} if inj else None,
         "bench": bench,
     }
     (out / "data.json").write_text(json.dumps(data, default=_json))
@@ -229,7 +231,76 @@ def _summary(live, source: str) -> dict:
     return {"id": live.id, "robot_id": live.robot_id, "run": live.coverage.get("run"), "t": round(live.t_abs, 2),
             "rung": inc["rung"], "rung_name": inc["rung_name"], "rule": inc["rule"], "route": inc["route"],
             "fingerprint": fp_of(inc), "layer": inc["layer"], "self_recovery": inc["self_recovery"],
-            "source": source, "bundle": f"incidents/{live.id}.json"}
+            "fix_by": FIX_BY.get(inc["rung"], "none"), "label": plain(fp_of(inc)),
+            "component": _component(inc), "source": source, "bundle": f"incidents/{live.id}.json"}
+
+
+def _component(inc: dict) -> str:
+    """The joint or camera an incident names, for search: the cause if there is one, else the anchor."""
+    ev = inc.get("cause") or inc.get("anchor") or {}
+    comp = ev.get("component", "")
+    return comp.split(".")[-1] if comp.startswith("observation.images.") else comp
+
+
+def _anon_calibration(cal: dict, anon: dict[str, str]) -> dict:
+    """The calibration block lists the arms it was tuned on; publish their numbers, not dataset ids."""
+    return {**cal, "robots": sorted(anon.get(r, "arm unknown") for r in cal.get("robots", []))}
+
+
+def _write_fleet(out: Path, joints, video, fleet_rows, anon, summaries) -> None:
+    """docs/fleet.json: one row per arm for the fleet view. Same scopes as the inbox: camera and
+    joint incidents from the joint pass over every run, task incidents from the video sample
+    (the only runs where every layer was checked), integrity problems counted on their own."""
+    arms = {}
+    for r in joints:
+        if "episodes" not in r:
+            continue
+        arms[r["robot_id"]] = {"id": anon[r["robot_id"]], "runs": len(r["episodes"]), "sampled": False,
+                               "sampled_runs": 0, "hw": {}, "task": None, "data": 0, "recurring": [],
+                               "lag": None, "latest_run": None, "marks": [], "bundled": []}
+    per_fp = defaultdict(Counter)
+
+    def mark(rid, run, rung, fp):
+        a = arms[rid]
+        a["marks"].append([run, rung])
+        a["latest_run"] = run if a["latest_run"] is None else max(a["latest_run"], run)
+        per_fp[rid][fp] += 1
+
+    for row in fleet_rows:
+        if row["robot_id"] not in arms or row["rung"] == 0:
+            continue
+        a = arms[row["robot_id"]]
+        if row["fingerprint"].startswith("integrity."):
+            a["data"] += 1
+        elif row["layer"] in ("sensing", "actuation"):
+            a["hw"][str(row["rung"])] = a["hw"].get(str(row["rung"]), 0) + 1
+            mark(row["robot_id"], row["episode"], row["rung"], row["fingerprint"])
+    for r in video:
+        if "episodes" not in r or r["robot_id"] not in arms:
+            continue
+        a = arms[r["robot_id"]]
+        a["sampled"], a["sampled_runs"], a["task"] = True, len(r["episodes"]), {}
+    for row in ledger_rows(video, "video"):
+        if row["robot_id"] not in arms or row["rung"] == 0 or row["layer"] != "task":
+            continue
+        a = arms[row["robot_id"]]
+        a["task"][str(row["rung"])] = a["task"].get(str(row["rung"]), 0) + 1
+        mark(row["robot_id"], row["episode"], row["rung"], row["fingerprint"])
+    for lag in robot_lags([r for r in video if "episodes" in r]):
+        if lag["robot_id"] not in arms or lag["n"] < 2:
+            continue
+        a = arms[lag["robot_id"]]
+        a["lag"] = lag["median_lag"] if a["lag"] is None else max(a["lag"], lag["median_lag"])
+    by_arm = {v["id"]: v for v in arms.values()}
+    for s in summaries:
+        if s["robot_id"] in by_arm:
+            by_arm[s["robot_id"]]["bundled"].append(s["id"])
+    for rid, a in arms.items():
+        a["recurring"] = sorted(plain(fp) for fp, n in per_fp[rid].items() if n >= RECUR_ON_ONE)
+        a["marks"].sort()
+    rows = sorted(arms.values(), key=lambda a: a["id"])
+    (out / "fleet.json").write_text(json.dumps({"lag_flag": LAG_FLAG, "recur_on_one": RECUR_ON_ONE,
+                                                "arms": rows}, default=_json, separators=(",", ":")))
 
 
 def _write_bundle(inc_dir: Path, live, source: str) -> None:
