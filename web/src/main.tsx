@@ -10,7 +10,7 @@ import { pathKey, route } from "./router";
 import { Palette } from "./components/Palette";
 import { ShortcutSheet } from "./components/ShortcutSheet";
 import { Sidebar } from "./components/Sidebar";
-import { DataError, Skel } from "./components/States";
+import { DataError, PageSkeleton } from "./components/States";
 import { ToastHost } from "./components/Toast";
 import { Ladder } from "./routes/Ladder";
 import { Queue } from "./routes/Queue";
@@ -48,18 +48,6 @@ const Fleet = lazy(() => import("./routes/Fleet"), "Fleet");
 const Arm = lazy(() => import("./routes/Arm"), "Arm");
 const Live = lazy(() => import("./routes/Live"), "Live");
 const Docs = lazy(() => import("./routes/docs/Docs"), "Docs");
-
-function PageSkeleton() {
-  return (
-    <main class="main main-wide" id="main" aria-busy="true">
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <Skel h={24} w="40%" />
-        <Skel h={12} w="70%" />
-      </div>
-      <Skel h={240} style="border-radius:12px" />
-    </main>
-  );
-}
 
 function Screen() {
   const r = route.value;

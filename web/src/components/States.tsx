@@ -64,3 +64,16 @@ export const DataError = ({ onRetry }: { onRetry: () => void }) => (
     onRetry={onRetry}
   />
 );
+
+/** Generic page skeleton while a screen's code or data loads. */
+export function PageSkeleton() {
+  return (
+    <main class="main main-wide" id="main" aria-busy="true">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <Skel h={24} w="40%" />
+        <Skel h={12} w="70%" />
+      </div>
+      <Skel h={240} style="border-radius:12px" />
+    </main>
+  );
+}
