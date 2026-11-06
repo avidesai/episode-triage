@@ -25,8 +25,10 @@ import numpy as np
 
 from .checks import RobotProfile
 from .fleet import _json
+from .ledger import fingerprint as fp_of
 from .pipeline import triage_episode
 from .readers import Camera, Episode
+from .report import plain
 
 W, H = 80, 60
 
@@ -228,6 +230,16 @@ def _truth_spans(truths: list[dict], fps: float, t0: float) -> list[dict]:
 
 # ---------------------------------------------------------------- writing a live site
 
+FIX_BY = {1: "robot", 2: "ticket", 3: "training", 4: "person"}
+
+
+def incident_component(inc: dict) -> str:
+    """The joint or camera an incident names: the cause if there is one, else the anchor."""
+    ev = inc.get("cause") or inc.get("anchor") or {}
+    comp = ev.get("component", "")
+    return comp.split(".")[-1] if comp.startswith("observation.images.") else comp
+
+
 class LiveSite:
     """Writes incidents where the viewer reads them: <site>/live/data.json and
     <site>/live/incidents/<id>.json. The page polls data.json and pulls new incidents."""
@@ -264,6 +276,8 @@ class LiveSite:
                           "fingerprint": inc["fingerprint"], "layer": inc["layer"],
                           "self_recovery": inc["self_recovery"], "truth": live.truth,
                           "supersedes": d["incident"].get("supersedes"),
+                          "fix_by": FIX_BY.get(inc["rung"], "none"), "label": plain(fp_of(inc)),
+                          "component": incident_component(inc),
                           "bundle": f"live/incidents/{d['id']}.json", "wall": time.time() - self.started})
         self.write()
 

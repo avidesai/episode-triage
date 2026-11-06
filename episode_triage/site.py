@@ -21,12 +21,12 @@ from .fleet import COMMUNITY, _json, _read_energies, score_video_sample
 from .ladder import RUNG_NAMES
 from .ledger import fingerprint as fp_of
 from .ledger import LAG_FLAG, RECUR_ON_ONE, findings, ledger_rows, load, rank_fingerprints, robot_lags
-from .monitor import package_incident
+from .monitor import FIX_BY, package_incident
+from .monitor import incident_component as _component
 from .pipeline import profile_for, triage_episode
 from .readers import open_robot
 from .report import PLAIN, plain
 
-FIX_BY = {1: "robot", 2: "ticket", 3: "training", 4: "person"}
 CACHE = Path(".cache/community_v3")
 
 CHECKS = [
@@ -234,13 +234,6 @@ def _summary(live, source: str) -> dict:
             "fingerprint": fp_of(inc), "layer": inc["layer"], "self_recovery": inc["self_recovery"],
             "fix_by": FIX_BY.get(inc["rung"], "none"), "label": plain(fp_of(inc)),
             "component": _component(inc), "source": source, "bundle": f"incidents/{live.id}.json"}
-
-
-def _component(inc: dict) -> str:
-    """The joint or camera an incident names, for search: the cause if there is one, else the anchor."""
-    ev = inc.get("cause") or inc.get("anchor") or {}
-    comp = ev.get("component", "")
-    return comp.split(".")[-1] if comp.startswith("observation.images.") else comp
 
 
 def _anon_calibration(cal: dict, anon: dict[str, str]) -> dict:
