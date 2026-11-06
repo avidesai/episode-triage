@@ -92,6 +92,8 @@ test("numbers and times", () => {
   assert.equal(niceMax(2.43), 2.5);
   assert.equal(niceMax(8.71), 8.8);
   assert.equal(niceMax(1.26), 1.3);
+  assert.equal(niceMax(12.21), 12.3);
+  assert.equal(niceMax(0.268), 0.27);
   assert.equal(axisNum(2.5), "2.5");
   assert.equal(axisNum(0), "0");
 });

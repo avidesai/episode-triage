@@ -59,8 +59,8 @@ export const IconChevron = ({ open }: { open?: boolean }) => (
 
 export const IconCameraOff = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" {...S}>
-    <path d="M2 2l12 12M5.5 4.5h4l1 1.5h2.5v6.5M11 12.5H3V6h2" />
-    <circle cx="8" cy="9" r="2" />
+    <rect x="1.5" y="4" width="9" height="8" rx="1.5" />
+    <path d="M10.5 7 14.5 5v6l-4-2M2 2l12 12" />
   </svg>
 );
 

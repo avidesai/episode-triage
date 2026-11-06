@@ -158,9 +158,11 @@ export function agoShort(seconds: number): string {
   return `${Math.floor(seconds / 3600)} h ago`;
 }
 
-/** Nice round y max: up to 2 significant digits, rounded up. */
+/** Nice round y max: rounded up to one decimal from 1 up (2.5, 8.8, 12.3), two significant
+ *  digits below 1 (0.27). */
 export function niceMax(v: number): number {
   if (!(v > 0)) return 1;
+  if (v >= 1) return Math.ceil(v * 10 - 1e-9) / 10;
   const p = Math.pow(10, Math.floor(Math.log10(v)) - 1);
   return Math.ceil(v / p - 1e-9) * p;
 }
@@ -168,6 +170,7 @@ export function niceMax(v: number): number {
 /** Format a y axis value to match niceMax's precision. */
 export function axisNum(v: number): string {
   if (v === 0) return "0";
+  if (Math.abs(v) >= 1) return fixed(v, 1);
   const d = Math.max(0, 1 - Math.floor(Math.log10(Math.abs(v))));
   return fixed(Number(v.toFixed(d)), d);
 }
