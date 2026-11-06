@@ -3,16 +3,20 @@ import { signal } from "@preact/signals";
 import { go } from "./router";
 
 // One keydown listener for the app. Screens register the keys they handle while mounted;
-// the shell handles navigation, search focus and the shortcuts sheet.
+// the shell handles the palette, the shortcut sheet, search focus and the "g then x" chords.
 
-type Handlers = Partial<Record<string, () => void>>;
+type Handlers = Partial<Record<string, (ev: KeyboardEvent) => void>>;
 type Ref = { current: Handlers };
 const stack: Ref[] = [];
-export const helpOpen = signal(false);
 
-/** Register keys while mounted. Handlers are read from the latest render, so fast key
- *  repeats never see stale state; `deps` is accepted for readability only. */
-export function useKeys(h: Handlers, _deps?: unknown[]): void {
+export const helpOpen = signal(false);
+export const paletteOpen = signal(false);
+/** True while a "g" is waiting for its second key; the shell shows a small hint. */
+export const chordPending = signal(false);
+
+/** Register keys while mounted. Handlers are read from the latest render, so fast key repeats
+ *  never see stale state. */
+export function useKeys(h: Handlers): void {
   const ref = useRef<Handlers>(h);
   ref.current = h;
   useEffect(() => {
@@ -27,38 +31,54 @@ export function useKeys(h: Handlers, _deps?: unknown[]): void {
 const typing = (el: EventTarget | null) =>
   el instanceof HTMLElement && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
 
-let gPending = 0;
-const G: Record<string, string> = { i: "inbox", f: "fleet", l: "live", h: "how", t: "trust", a: "about" };
+const CHORDS: Record<string, string[]> = {
+  l: [],
+  q: ["queue"],
+  f: ["fleet"],
+  v: ["live"],
+  d: ["docs", "decides"],
+};
+
+let chordTimer = 0;
+function endChord() {
+  chordPending.value = false;
+  clearTimeout(chordTimer);
+}
 
 export function installKeys(): void {
   document.addEventListener("keydown", (ev) => {
+    if ((ev.metaKey || ev.ctrlKey) && !ev.altKey && ev.key.toLowerCase() === "k") {
+      ev.preventDefault();
+      helpOpen.value = false;
+      paletteOpen.value = !paletteOpen.value;
+      return;
+    }
     if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    if (paletteOpen.value || helpOpen.value) return; // the dialogs handle their own keys
     if (typing(ev.target)) {
       if (ev.key === "Escape") (ev.target as HTMLElement).blur();
       return;
     }
-    if (helpOpen.value) {
-      if (ev.key === "Escape" || ev.key === "?") {
-        helpOpen.value = false;
-        ev.preventDefault();
-      }
-      return;
-    }
+    // A menu or listbox that is open handles its own keys.
+    if (ev.target instanceof HTMLElement && ev.target.closest("[data-menu]")) return;
     const k = ev.key;
-    if (gPending && Date.now() - gPending < 1200 && G[k]) {
-      gPending = 0;
-      ev.preventDefault();
-      go([G[k]]);
-      return;
+    if (chordPending.value) {
+      endChord();
+      const to = CHORDS[k];
+      if (to) {
+        ev.preventDefault();
+        go(to);
+        return;
+      }
     }
-    gPending = 0;
     if (k === "g") {
-      gPending = Date.now();
+      chordPending.value = true;
+      chordTimer = window.setTimeout(endChord, 1000);
       return;
     }
     if (k === "?") {
-      helpOpen.value = true;
       ev.preventDefault();
+      helpOpen.value = true;
       return;
     }
     if (k === "/") {
@@ -76,23 +96,58 @@ export function installKeys(): void {
         // Enter on a focused link or button already does the right thing.
         if (k === "Enter" && ev.target instanceof HTMLElement && /^(A|BUTTON)$/.test(ev.target.tagName)) return;
         ev.preventDefault();
-        f();
+        f(ev);
         return;
       }
     }
   });
 }
 
-export const SHORTCUTS: [string, string][] = [
-  ["j / k", "Next and previous incident"],
-  ["Enter", "Open the selected incident"],
-  ["Esc", "Close the incident, or leave the search box"],
-  ["[ / ]", "Previous and next incident while one is open"],
-  ["a", "Mark acknowledged"],
-  ["r", "Mark resolved"],
-  ["u", "Mark new again"],
-  ["n", "Edit the note"],
-  ["/", "Search"],
-  ["g then i, f, l, h, t, a", "Go to Inbox, Fleet, Live, How it decides, Trust, About"],
-  ["?", "Show this list"],
+export const SHORTCUTS: { group: string; keys: [string[], string][] }[] = [
+  {
+    group: "Anywhere",
+    keys: [
+      [["⌘K"], "Open the command palette"],
+      [["?"], "Show this list"],
+      [["g", "l"], "Go to Ladder"],
+      [["g", "q"], "Go to Queue"],
+      [["g", "f"], "Go to Fleet"],
+      [["g", "v"], "Go to Live"],
+      [["g", "d"], "Go to How it decides"],
+      [["Esc"], "Close a palette, sheet or menu"],
+    ],
+  },
+  {
+    group: "Lists",
+    keys: [
+      [["/"], "Search, on Queue and Fleet"],
+      [["j", "k"], "Move down and up"],
+      [["↵"], "Open the problem or incident"],
+      [["→", "←"], "Expand or collapse a problem"],
+      [["[", "]"], "Previous and next incident"],
+      [["a"], "Acknowledge, again to set back to New"],
+      [["r"], "Resolve, again to set back to New"],
+    ],
+  },
+  {
+    group: "Incident",
+    keys: [
+      [["Esc"], "Back to the queue"],
+      [["[", "]"], "Previous and next incident"],
+      [["a", "r"], "Acknowledge or resolve"],
+      [["w"], "Around the failure or whole clip"],
+      [["1", "2", "3"], "Rung 4: the task, the arm, not sure"],
+    ],
+  },
+  {
+    group: "Live",
+    keys: [
+      [["j", "k"], "Next and previous row, pauses following"],
+      [["↓", "↑"], "Same as j and k"],
+      [["f"], "Follow newest"],
+    ],
+  },
 ];
+
+export const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+export const cmdK = isMac ? "⌘K" : "Ctrl K";

@@ -1,4 +1,88 @@
-/* Shell only rules the design stylesheet does not have: palette, shortcut sheet, toast, skip link,
-   chord hint, windowed lists. Everything visual comes from tokens.css and components.css. */
+/* Shell only rules the design stylesheet does not have: skip link, chord hint, toast, command
+   palette, shortcut sheet, filter menus, windowed lists. Colors are tokens only. */
 
 #app { min-height: 100vh; }
+.app { min-height: 100vh; }
+.tri [tabindex="-1"]:focus { outline: none; }
+.tri dialog { color: var(--text); }
+
+/* The system dark theme also needs the copy button border the design sets for [data-theme="dark"]. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .copy button { border-color: rgba(0,0,0,.25); }
+}
+
+/* Skip link: first focusable element, visible only when focused. */
+.skip { position: absolute; left: 12px; top: -48px; z-index: 50; padding: 8px 12px; border-radius: 8px; background: var(--inverse); color: var(--on-inverse) !important; font-weight: 500; }
+.skip:focus { top: 12px; }
+
+/* "g then x" hint */
+.chord { position: fixed; left: 16px; bottom: 16px; z-index: 40; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-3); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; }
+
+/* Toast: inverse pill, bottom center */
+.toast-host { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; pointer-events: none; max-width: calc(100vw - 32px); }
+.toast { pointer-events: auto; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; background: var(--inverse); color: var(--on-inverse); font-size: 12.5px; box-shadow: var(--shadow-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: toast-in .2s ease-out; }
+.toast button { background: transparent; border: 0; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; padding: 0 2px; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Dialogs: palette and shortcut sheet */
+dialog.palette, dialog.sheet { padding: 0; border: 0; background: transparent; max-width: none; max-height: none; overflow: visible; }
+dialog.palette::backdrop, dialog.sheet::backdrop { background: rgba(16,18,22,.32); }
+dialog.palette { position: fixed; top: 12vh; margin: 0 auto; width: min(560px, calc(100vw - 32px)); }
+.palette-box, .sheet-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-2); overflow: hidden; animation: pop .2s ease-out; }
+@keyframes pop { from { opacity: 0; transform: translateY(-4px) scale(.99); } to { opacity: 1; transform: none; } }
+.palette-field { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--text-3); }
+.palette-field input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 16px; outline: none; }
+.palette-list { list-style: none; margin: 0; padding: 6px; max-height: min(60vh, 460px); overflow-y: auto; display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; }
+.palette-group { padding: 8px 8px 2px; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-3); }
+.palette-item { display: flex; align-items: baseline; gap: 8px; padding: 7px 8px; border-radius: 6px; cursor: pointer; min-width: 0; }
+.palette-item.active { background: var(--sunken); }
+.palette-kind { flex: none; font-size: 12px; color: var(--text-3); }
+.palette-kind::after { content: " ·"; }
+.palette-meta { min-width: 0; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.palette-meta::before { content: "· "; color: var(--text-3); }
+.palette-none { display: flex; flex-direction: column; gap: 4px; padding: 20px 12px; text-align: center; color: var(--text-2); }
+.palette-none b { color: var(--text); font-size: 14px; }
+
+dialog.sheet { position: fixed; top: 10vh; margin: 0 auto; width: min(720px, calc(100vw - 32px)); }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border-soft); }
+.sheet-cols { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px 28px; padding: 16px; max-height: 70vh; overflow-y: auto; }
+.sheet-cols h3 { margin: 0 0 8px; }
+.sheet-cols dl { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.sheet-cols dl > div { display: grid; grid-template-columns: 120px minmax(0,1fr); gap: 10px; align-items: baseline; }
+.sheet-cols dt { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.sheet-cols dd { margin: 0; color: var(--text-2); }
+
+/* Filter menus */
+.fwrap { position: relative; display: inline-flex; }
+.filter .x { margin-left: 2px; padding: 0 2px; border-radius: 3px; }
+.filter .x:hover { color: var(--text); background: var(--sunken); }
+.menu { position: absolute; top: calc(100% + 4px); left: 0; z-index: 30; min-width: 200px; max-width: 280px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-2); overflow: hidden; animation: pop .2s ease-out; }
+.menu-input { display: block; width: 100%; height: 36px; padding: 0 10px; border: 0; border-bottom: 1px solid var(--border-soft); background: transparent; color: var(--text); font: inherit; outline: none; }
+.menu ul { list-style: none; margin: 0; padding: 4px; max-height: 280px; overflow-y: auto; outline: none; }
+.menu li { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 30px; padding: 0 8px; border-radius: 6px; cursor: pointer; font-size: 12.5px; color: var(--text-2); }
+.menu li.active { background: var(--sunken); color: var(--text); }
+.menu li[aria-selected="true"] { color: var(--text); font-weight: 600; }
+.menu li.none { cursor: default; }
+
+/* Queue: problem lists and the selected incident pane */
+.qnote { padding: 10px 16px 12px 100px; border-top: 1px solid var(--border-soft); font-size: 12px; color: var(--text-3); background: var(--bg); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.qmore { height: 26px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 12px; cursor: pointer; }
+.kfocus { box-shadow: inset 2px 0 0 var(--accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .toast, .palette-box, .sheet-box, .menu { animation: none; }
+}
+
+@media (max-width: 1100px) {
+  .qnote { padding-left: 16px; }
+}
+
+@media (max-width: 600px) {
+  dialog.palette { top: 0; width: 100vw; height: 100dvh; }
+  dialog.palette .palette-box { height: 100%; border-radius: 0; display: flex; flex-direction: column; }
+  dialog.palette .palette-list { max-height: none; flex: 1; }
+  .sheet-cols { grid-template-columns: minmax(0,1fr); }
+  .menu li { min-height: 44px; }
+  .filter { min-height: 44px; }
+  .qmore { height: 44px; }
+}

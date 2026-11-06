@@ -99,3 +99,58 @@ export function setTheme(t: Theme): void {
   else document.documentElement.dataset.theme = t;
   setPref("triage.theme", t === "system" ? null : t);
 }
+
+// ---------------------------------------------------------------- rung 4 "your call"
+
+export type Call = "task" | "arm" | "unsure";
+const CALL_KEY = "triage.call.v1";
+
+function readCalls(): Record<string, Call> {
+  try {
+    const v = JSON.parse(getPref(CALL_KEY) || "{}");
+    return v && typeof v === "object" ? v : {};
+  } catch {
+    return {};
+  }
+}
+
+export const calls = signal<Record<string, Call>>(readCalls());
+
+/** Set or clear (null) the viewer's call on a rung 4 incident. */
+export function setCall(id: string, c: Call | null): void {
+  const next = { ...calls.value };
+  if (c) next[id] = c;
+  else delete next[id];
+  calls.value = next;
+  setPref(CALL_KEY, JSON.stringify(next));
+}
+
+// ---------------------------------------------------------------- recently opened, for the palette
+
+export interface Recent {
+  kind: "Problem" | "Arm" | "Incident" | "Rule";
+  text: string;
+  meta: string;
+  to: string;
+}
+const RECENT_KEY = "triage.recent.v1";
+
+function readRecent(): Recent[] {
+  try {
+    const v = JSON.parse(getPref(RECENT_KEY) || "[]");
+    return Array.isArray(v) ? v.slice(0, 5) : [];
+  } catch {
+    return [];
+  }
+}
+
+export const recent = signal<Recent[]>(readRecent());
+
+export function pushRecent(r: Recent): void {
+  const next = [r, ...recent.value.filter((x) => x.to !== r.to)].slice(0, 5);
+  recent.value = next;
+  setPref(RECENT_KEY, JSON.stringify(next));
+}
+
+/** The line every place that keeps local state shows. */
+export const localLine = (): string => (storageOK ? "Saved in this browser only" : "Not saved: this browser blocks site storage");
