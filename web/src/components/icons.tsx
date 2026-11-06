@@ -52,14 +52,8 @@ export const IconError = () => (
 );
 
 export const IconChevron = ({ open }: { open?: boolean }) => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 16 16"
-    {...S}
-    style={{ transform: open ? "rotate(90deg)" : "none", transition: "transform .12s ease-out", color: "var(--text-3)" }}
-  >
-    <path d="M6 3.5 10.5 8 6 12.5" />
+  <svg width="12" height="12" viewBox="0 0 12 12" {...S} style={{ color: "var(--text-3)", transform: open ? "rotate(90deg)" : "none", transition: "transform .12s ease-out" }}>
+    <path d="M4.5 3 7.5 6 4.5 9" />
   </svg>
 );
 
