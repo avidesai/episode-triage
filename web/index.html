@@ -4,17 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Triage</title>
-<meta name="description" content="A triage inbox for a robot fleet: every failure sorted by who should fix it, with its evidence attached.">
+<meta name="description" content="Every failure in a robot fleet, sorted by who should fix it, with its evidence attached.">
 <meta name="color-scheme" content="light dark">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%232457c5'/%3E%3Cpath d='M4 5h8M4 8h5M4 11h7' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Crect width='22' height='22' rx='5' fill='%2315171C'/%3E%3Crect x='5' y='5' width='12' height='2' rx='1' fill='white'/%3E%3Crect x='5' y='9' width='9' height='2' rx='1' fill='white' opacity='.8'/%3E%3Crect x='5' y='13' width='6' height='2' rx='1' fill='white' opacity='.6'/%3E%3Crect x='5' y='17' width='3' height='2' rx='1' fill='white' opacity='.45'/%3E%3C/svg%3E">
 <link rel="preload" href="data.json" as="fetch" crossorigin>
 <script>
-  // Apply a saved theme before first paint so there is no flash.
-  try { var t = localStorage.getItem("triage.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+  // Apply a chosen theme before first paint, so a dark viewer never sees a light flash.
+  try { var t = localStorage.getItem("triage.theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
 </script>
 </head>
 <body>
-<div id="app"></div>
+<div id="app" class="tri"></div>
 <noscript>This viewer needs JavaScript. The data is in <a href="data.json">data.json</a>.</noscript>
 <script type="module" src="/src/main.tsx"></script>
 </body>

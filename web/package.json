@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "check": "tsc --noEmit",
-    "build": "tsc --noEmit && node scripts/clean.mjs && vite build",
-    "preview": "vite preview"
+    "build": "tsc --noEmit && node --test src/format.test.ts && node scripts/clean.mjs && vite build",
+    "preview": "vite preview",
+    "test": "node --test src/format.test.ts"
   },
   "dependencies": {
     "@preact/signals": "2.11.4",
