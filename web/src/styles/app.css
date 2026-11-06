@@ -83,6 +83,8 @@ dialog.sheet { position: fixed; top: 10vh; margin: 0 auto; width: min(720px, cal
   dialog.palette .palette-list { max-height: none; flex: 1; }
   .sheet-cols { grid-template-columns: minmax(0,1fr); }
   .menu li { min-height: 44px; }
-  .filter { min-height: 44px; }
+  /* Filters keep the design's 30 px look; the touch target grows to 44 px invisibly. */
+  .filter { position: relative; }
+  .filter::after { content: ""; position: absolute; left: 0; right: 0; top: -7px; bottom: -7px; }
   .qmore { height: 44px; }
 }

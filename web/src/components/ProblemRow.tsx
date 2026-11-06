@@ -57,6 +57,7 @@ export function ProblemRow({
       aria-expanded={open ? "true" : "false"}
       onClick={onToggle}
       ref={focusRef}
+      data-row="p"
       data-fp={p.fingerprint}
     >
       {cells}

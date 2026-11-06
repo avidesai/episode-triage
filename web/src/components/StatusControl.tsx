@@ -46,22 +46,20 @@ export function StatusControl({ id, card = true }: { id: string; card?: boolean 
           Resolved <Kbd>R</Kbd>
         </button>
       </div>
-      <label class="lbl" for={`note-${id}`} style="margin-top:2px">
+      <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3)">
         Note
-      </label>
-      <textarea
-        id={`note-${id}`}
-        class="textarea"
+        <textarea
+          class="textarea"
         rows={2}
         maxLength={280}
         value={note}
-        placeholder="What you checked, who has it"
         onInput={(e) => onInput((e.target as HTMLTextAreaElement).value)}
         onBlur={() => {
           clearTimeout(timer.current);
           setNote(id, note);
         }}
-      />
+        />
+      </label>
     </div>
   );
   return card ? <section class="card card-pad" aria-label="Status">{body}</section> : body;
