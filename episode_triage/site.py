@@ -18,12 +18,13 @@ import numpy as np
 
 from .checks import THRESHOLDS
 from .fleet import COMMUNITY, _json, _read_energies, score_video_sample
-from .ladder import RUNG_NAMES
+from .ladder import PLAIN_CHECK, RUNG_NAMES, short
 from .ledger import fingerprint as fp_of
 from .ledger import LAG_FLAG, RECUR_ON_ONE, findings, ledger_rows, load, rank_fingerprints, robot_lags
 from .monitor import FIX_BY, package_incident
 from .monitor import incident_component as _component
 from .pipeline import profile_for, triage_episode
+from .timeline import STANDING
 from .readers import open_robot
 from .report import PLAIN, plain
 
@@ -127,7 +128,7 @@ def build(results: Path, out: Path, max_joint_examples: int = 4) -> None:
                 ident = f"{anon[rid]}-r{i}-{k}"
                 live = package_incident(res, inc, anon[rid], i, ident=ident)
                 _write_bundle(inc_dir, live, "video sample")
-                summaries.append(_summary(live, "video sample"))
+                summaries.append(_summary(live, "video sample", res.events))
                 by_fp[fp_of(live.incident)].append(ident)
 
     # ---- examples for fleet wide fingerprints that have no video example
@@ -161,7 +162,7 @@ def build(results: Path, out: Path, max_joint_examples: int = 4) -> None:
                     continue    # already bundled with cameras from the video sample
                 live = package_incident(res, inc, anon[rid], i, ident=ident)
                 _write_bundle(inc_dir, live, "joint pass")
-                summaries.append(_summary(live, "joint pass"))
+                summaries.append(_summary(live, "joint pass", res.events))
                 by_fp[fp].append(ident)
 
     # ---- the inbox: fingerprints ranked across the fleet
@@ -227,13 +228,29 @@ def _robot_index(results: Path, joints, video) -> dict[str, str]:
     return anon
 
 
-def _summary(live, source: str) -> dict:
+def _co_faults(live, events) -> list[dict]:
+    """Rule R5 on a recording with a standing fault: the faults the route cites, as fields, so the
+    viewer can show both candidates without parsing the sentence. Same names the ladder writes."""
     inc = live.incident
+    if inc.get("rule") != "R5" or "also has" not in inc.get("route", ""):
+        return []
+    out = {}
+    for e in events:     # every event on the recording; the bundle keeps only those near the incident
+        if e.check in STANDING:
+            comp = short(e.component) if e.component.startswith("observation.") else e.component
+            out[(e.check, comp)] = {"label": PLAIN_CHECK.get(e.check, e.check), "component": comp}
+    return sorted(out.values(), key=lambda x: (x["label"], x["component"]))
+
+
+def _summary(live, source: str, events=()) -> dict:
+    inc = live.incident
+    co = _co_faults(live, events)
     return {"id": live.id, "robot_id": live.robot_id, "run": live.coverage.get("run"), "t": round(live.t_abs, 2),
             "rung": inc["rung"], "rung_name": inc["rung_name"], "rule": inc["rule"], "route": inc["route"],
             "fingerprint": fp_of(inc), "layer": inc["layer"], "self_recovery": inc["self_recovery"],
             "fix_by": FIX_BY.get(inc["rung"], "none"), "label": plain(fp_of(inc)),
-            "component": _component(inc), "source": source, "bundle": f"incidents/{live.id}.json"}
+            "component": _component(inc), "source": source, "bundle": f"incidents/{live.id}.json",
+            **({"co_faults": co} if co else {})}
 
 
 def _anon_calibration(cal: dict, anon: dict[str, str]) -> dict:
