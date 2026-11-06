@@ -32,6 +32,8 @@ export interface PanelSpec {
   pos?: number[];
   held?: { level: number; note: string; t0: number; t1: number };
   callout?: [string, string];
+  /** A note above the plot at a time, like "3 more freezes, dashed" on the Live chart. */
+  topNote?: { text: string; t: number };
   pointer?: { text: string; side: "left" | "right"; x: number; top: string; color: string; maxWidth?: number };
 }
 
@@ -279,6 +281,11 @@ export function TimelinePanel({
         </svg>
         {labels}
         {notes}
+        {p.topNote ? (
+          <span class="note-in t-2" style={`left:${pctX(p.topNote.t, r)}%;top:-18px;background:var(--surface)`}>
+            {p.topNote.text}
+          </span>
+        ) : null}
         {callout}
         {pointer}
         {hover ? <div class="cursor" style={`left:${cx}%`} /> : null}

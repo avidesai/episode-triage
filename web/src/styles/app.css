@@ -75,6 +75,8 @@ dialog.sheet { position: fixed; top: 10vh; margin: 0 auto; width: min(720px, cal
 
 @media (max-width: 1100px) {
   .qnote { padding-left: 16px; }
+  /* stream on top, detail right under it, no stretched gap */
+  .live-grid { align-content: flex-start; }
 }
 
 @media (max-width: 600px) {

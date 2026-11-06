@@ -48,6 +48,8 @@ export interface Summary {
   fix_by?: FixBy;
   label?: string;
   component?: string;
+  /** Rung 4 (R5): the standing faults on the same recording the rule cited. */
+  co_faults?: { label: string; component: string }[];
 }
 
 export interface Rule {
@@ -174,6 +176,9 @@ export interface LiveRow {
   supersedes?: string | null;
   bundle: string;
   wall: number;
+  fix_by?: FixBy;
+  label?: string;
+  component?: string;
 }
 
 export interface LiveData {

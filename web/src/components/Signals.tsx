@@ -294,7 +294,7 @@ function build({ b, s, th }: Ctx, mode: RangeMode) {
   const parts: string[] = [];
   if (notDrawnCams.length) parts.push(`${sentence(list(notDrawnCams.map(camWords)))} camera${notDrawnCams.length > 1 ? "s" : ""} checked, not drawn.`);
   if (s.rung === 4) {
-    const co = coFaultOf(s.route, (s as any).co_faults);
+    const co = coFaultOf(s.route, s.co_faults);
     if (co && !jointKeyOf(jointKeys, co.component)) parts.push(`${sentence(partWords(co.component))}, where the standing fault is, is not in this clip.`);
   }
   if (parts.length) notes.push(parts.join(" "));

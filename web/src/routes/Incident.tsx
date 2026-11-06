@@ -253,7 +253,7 @@ function SignalsSkeleton() {
 
 /** Rung 4: the two candidates the engine could not tell apart. */
 function Candidates({ s }: { s: Summary }) {
-  const co = coFaultOf(s.route, (s as any).co_faults);
+  const co = coFaultOf(s.route, s.co_faults);
   const left = s.route.split(", on a recording")[0].split(";")[0];
   const contact = /contact with the world or a dead joint/.test(s.route);
   return (
@@ -375,7 +375,7 @@ function EvidenceCard({ s, d, b }: { s: Summary; d: Data; b: Bundle }) {
   const rows: EvRow[] = evidenceRows(ev, d.thresholds, {
     rung: s.rung,
     route: s.route,
-    coFaults: (s as any).co_faults,
+    coFaults: s.co_faults,
     firstBefore: first ? partWords(first.component) : null,
   });
   return (
