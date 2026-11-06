@@ -1,3 +1,4 @@
+import { Fragment } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import { cmdK, helpOpen, SHORTCUTS } from "../keys";
 
@@ -54,10 +55,10 @@ export function ShortcutSheet() {
                   <div key={what}>
                     <dt>
                       {keys.map((k, i) => (
-                        <>
+                        <Fragment key={k + i}>
                           {i ? <span class="t-3"> {keys[0] === "g" ? "then" : ""} </span> : null}
                           <span class="kbd">{k === "⌘K" ? cmdK : k}</span>
-                        </>
+                        </Fragment>
                       ))}
                     </dt>
                     <dd>{what}</dd>

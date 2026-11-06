@@ -1,3 +1,4 @@
+import { Fragment } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { fpsOf, inRange, t1, type Range } from "../chart";
 import { coFaultOf, calloutOf } from "../evidence";
@@ -371,14 +372,14 @@ export function Signals({ b, s, th, mode, setMode }: { b: Bundle; s: Summary; th
         ))}
       </div>
       {panels.map((p, i) => (
-        <>
-          <TimelinePanel key={p.key} p={p} t={t} r={r} bands={p.role || (!panels.some((x) => x.role) && i === 0) ? bands : untagged.filter((x) => x.kind !== "ignored")} minBandPct={minBandPct} cursor={cursor} setCursor={setCursor} fps={fps} />
+        <Fragment key={p.key}>
+          <TimelinePanel p={p} t={t} r={r} bands={p.role || (!panels.some((x) => x.role) && i === 0) ? bands : untagged.filter((x) => x.kind !== "ignored")} minBandPct={minBandPct} cursor={cursor} setCursor={setCursor} fps={fps} />
           {i === 0 && p.focus && camCause && panels.length > 1 ? (
             <div style="padding:10px 16px;border-top:1px solid var(--border-soft);font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:center">
               <span class="lbl">Same moment, everything else</span>
             </div>
           ) : null}
-        </>
+        </Fragment>
       ))}
       {noCamBox ? (
         <div style="display:flex;align-items:center;gap:12px;margin:0 16px 16px;padding:12px 14px;border:1px dashed var(--border-strong);border-radius:8px;color:var(--text-2)">

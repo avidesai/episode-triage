@@ -1,8 +1,8 @@
 # web: the triage viewer
 
-Source for the viewer in `../docs`. Preact and TypeScript, built with Vite into static files
-that GitHub Pages and `triage serve` both serve as they are. The design, screens and tokens are
-in [DESIGN.md](DESIGN.md).
+Source for the viewer in `../docs`. Preact and TypeScript, built with Vite into static files that
+GitHub Pages and `triage serve` both serve as they are. The screens, tokens, components and the
+decisions behind them are in [DESIGN.md](DESIGN.md).
 
 ## Commands
 
@@ -11,12 +11,16 @@ cd web
 npm install          # once
 npm run dev          # http://localhost:5173, reads data from ../docs
 npm run check        # type check only
-npm run build        # type check, then write ../docs/index.html and ../docs/assets/
+npm test             # unit tests for the words and number formats
+npm run build        # type check, test, then write ../docs/index.html and ../docs/assets/
 ```
 
-`npm run dev` serves `../docs` as its public folder, so `data.json`, `fleet.json`,
-`incidents/` and `live/` load exactly as in production. Run `triage replay` in another terminal
-and the Live screen picks it up.
+`npm run dev` serves `../docs` as its public folder, so `data.json`, `fleet.json`, `incidents/`
+and `live/` load exactly as in production. Run `triage replay` in another terminal and the Live
+screen picks it up.
+
+To refresh the rehearsal the no monitor page plays, run a replay into `../docs` and then
+`node scripts/live-sample.mjs`.
 
 ## Publish
 
@@ -34,9 +38,11 @@ the engine's files.
 
 ## Rules the code keeps
 
-- Every number on screen comes from `data.json`, `fleet.json` or a bundle. None is typed into
-  the markup.
-- Counts with their N, never success rates.
+- Every number on screen comes from `data.json`, `fleet.json`, a bundle or the live feed. None is
+  typed into the markup.
+- Counts with their N, never rates.
 - Arms are numbers. Dataset ids never reach the page.
-- Status and notes live in this browser's localStorage and say so wherever they appear.
-- No requests leave the site: no fonts, scripts or analytics from anywhere else.
+- Engine text (routes, trace lines, rules, checks) is shown verbatim.
+- Status, notes and "your call" live in this browser's localStorage and say so wherever they
+  appear.
+- No requests leave the site: fonts are self hosted, no scripts or analytics from anywhere else.

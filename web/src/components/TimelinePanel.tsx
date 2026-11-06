@@ -1,3 +1,4 @@
+import { Fragment } from "preact";
 import type { ComponentChildren } from "preact";
 import { at, inRange, points, ptsAttr, ticks, type Range } from "../chart";
 import { axisNum, fixed, int, niceMax } from "../format";
@@ -293,10 +294,10 @@ export function TimelinePanel({
           <div class="readout" style={cx > 70 ? `right:calc(${100 - cx}% + 6px);top:8px` : `left:calc(${cx}% + 6px);top:8px`}>
             {fixed(cursor!.t, 2)} s
             {readout.map((l) => (
-              <>
+              <Fragment key={l}>
                 <br />
                 {l}
-              </>
+              </Fragment>
             ))}
           </div>
         ) : null}

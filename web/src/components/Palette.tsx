@@ -1,3 +1,4 @@
+import { Fragment } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { data, fleetLoad, loadFleet } from "../data";
 import { armHeadline, fleetArms, problems, shortProblem, verdictOf } from "../derive";
@@ -197,7 +198,7 @@ export function Palette() {
               const head = it.group !== lastGroup ? it.group : null;
               lastGroup = it.group;
               return (
-                <>
+                <Fragment key={`${it.group}-${it.to}-${it.text}`}>
                   {head ? (
                     <li class="palette-group" role="presentation">
                       {head}
@@ -222,7 +223,7 @@ export function Palette() {
                       </>
                     )}
                   </li>
-                </>
+                </Fragment>
               );
             })}
             {query && !items.length ? (

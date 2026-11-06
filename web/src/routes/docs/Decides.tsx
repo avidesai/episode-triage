@@ -1,3 +1,4 @@
+import { Fragment } from "preact";
 import { RungMark } from "../../components/RungMark";
 import { data } from "../../data";
 import { num, plural } from "../../format";
@@ -66,8 +67,8 @@ export function Decides() {
               </div>
             ))}
             {d.rules.map((r) => (
-              <>
-                <div key={r.rule} role="rowheader" style="padding:12px 14px;border-bottom:1px solid var(--border-soft);display:flex;flex-direction:column;gap:2px;font-size:13px">
+              <Fragment key={r.rule}>
+                <div role="rowheader" style="padding:12px 14px;border-bottom:1px solid var(--border-soft);display:flex;flex-direction:column;gap:2px;font-size:13px">
                   <span class="mono" style="font-weight:600;color:var(--text)">
                     {r.rule}
                   </span>
@@ -92,7 +93,7 @@ export function Decides() {
                     ) : null}
                   </div>
                 ))}
-              </>
+              </Fragment>
             ))}
           </div>
         </div>
