@@ -290,7 +290,7 @@ export function Queue() {
                   {isOpen ? (
                     <>
                       {shown.map((s) => (
-                        <IncidentRow key={s.id} s={s} sel={isWide && sel?.id === s.id} onPick={() => select(s)} onOpen={() => open(s)} />
+                        <IncidentRow key={s.id} s={s} sel={(isWide || !!q.sel) && sel?.id === s.id} onPick={() => select(s)} onOpen={() => open(s)} />
                       ))}
                       <div class="qnote">
                         <span>{groupNote(p, bundled, kids.length, incFilterOn)}</span>
@@ -323,7 +323,7 @@ export function Queue() {
                 s={s}
                 flat
                 label={problemByFp.value.get(s.fingerprint)?.base ?? s.label ?? s.fingerprint}
-                sel={isWide && sel?.id === s.id}
+                sel={(isWide || !!q.sel) && sel?.id === s.id}
                 onPick={() => select(s)}
                 onOpen={() => open(s)}
               />
